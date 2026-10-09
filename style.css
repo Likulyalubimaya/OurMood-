@@ -1,0 +1,193 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --background: #100e1b;
+    --card: #201b30;
+    --purple: #a78bfa;
+    --pink: #f0abfc;
+    --text: #ffffff;
+    --muted: #b6aecb;
+}
+
+body {
+    background: var(--background);
+    color: var(--text);
+    font-family: Arial, sans-serif;
+    min-height: 100vh;
+}
+
+.app {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 24px 18px;
+}
+
+header {
+    text-align: center;
+    padding: 18px 0 30px;
+}
+
+.logo {
+    font-size: 48px;
+    margin-bottom: 8px;
+}
+
+h1 {
+    font-size: 32px;
+    background: linear-gradient(
+        90deg,
+        var(--purple),
+        var(--pink)
+    );
+
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+.subtitle {
+    color: var(--muted);
+    margin-top: 8px;
+    font-size: 14px;
+}
+
+.welcome {
+    margin-bottom: 22px;
+}
+
+.welcome h2 {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.welcome p,
+.invite-section p {
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.partner-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px;
+    background: var(--card);
+    border: 1px solid #39304f;
+    border-radius: 20px;
+    margin-bottom: 30px;
+}
+
+.avatar {
+    width: 55px;
+    height: 55px;
+    border-radius: 17px;
+    background: #352747;
+    display: grid;
+    place-items: center;
+    font-size: 28px;
+}
+
+.partner-info h3 {
+    margin-bottom: 6px;
+}
+
+.partner-info p {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.mood-section h2,
+.invite-section h2 {
+    font-size: 21px;
+    margin-bottom: 18px;
+}
+
+.mood-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.mood {
+    border: 1px solid #39304f;
+    background: var(--card);
+    color: var(--text);
+    border-radius: 17px;
+    padding: 16px 4px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.mood span {
+    display: block;
+    font-size: 30px;
+    margin-bottom: 9px;
+}
+
+.mood small {
+    font-size: 11px;
+}
+
+.mood.selected {
+    background: #39284e;
+    border-color: var(--pink);
+    transform: scale(1.03);
+}
+
+.primary-button,
+.secondary-button {
+    width: 100%;
+    border: none;
+    border-radius: 15px;
+    padding: 16px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 14px;
+}
+
+.primary-button {
+    color: #1a1125;
+    background: linear-gradient(
+        100deg,
+        var(--purple),
+        var(--pink)
+    );
+}
+
+.secondary-button {
+    color: var(--text);
+    background: #302741;
+    border: 1px solid #49375e;
+}
+
+.message {
+    color: var(--pink);
+    text-align: center;
+    margin-top: 12px;
+    font-size: 13px;
+}
+
+.invite-section {
+    margin-top: 35px;
+    padding: 20px;
+    border-radius: 20px;
+    background: var(--card);
+}
+
+.invite-section p {
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+footer {
+    text-align: center;
+    color: #786e8f;
+    padding: 30px 0 12px;
+    font-size: 12px;
+}
+
