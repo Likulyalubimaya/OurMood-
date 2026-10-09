@@ -1,6 +1,7 @@
 // ================================
 // FIREBASE
 // ================================
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 
 import {
@@ -21,10 +22,9 @@ import {
 
 
 // ================================
-// ТВОЙ FIREBASE CONFIG
+// FIREBASE CONFIG
 // ================================
 
-// ВСТАВЬ СЮДА СВОЙ firebaseConfig
 const firebaseConfig = {
     apiKey: "AIzaSyDqcukb88QN0CcJ3miBMgoine5Pom_YliU",
     authDomain: "ourmood-874e2.firebaseapp.com",
@@ -59,22 +59,104 @@ if (tg) {
 
 
 // ================================
-// ЭЛЕМЕНТЫ
+// ПЕРЕМЕННЫЕ
 // ================================
 
 let selectedMood = null;
 let currentUser = null;
 let currentPairId = null;
 
-const moodButtons = document.querySelectorAll(".mood");
-const saveButton = document.getElementById("save-mood");
-const message = document.getElementById("message");
+let currentUserName =
+    localStorage.getItem("ourMoodName");
 
-const createPairButton = document.getElementById("create-pair");
-const joinPairButton = document.getElementById("join-pair");
-const sharePairButton = document.getElementById("share-pair");
-const leavePairButton = document.getElementById("leave-pair");
-const partnerStatus = document.getElementById("partner-status");
+
+// ================================
+// ЭЛЕМЕНТЫ
+// ================================
+
+const moodButtons =
+    document.querySelectorAll(".mood");
+
+const saveButton =
+    document.getElementById("save-mood");
+
+const message =
+    document.getElementById("message");
+
+const createPairButton =
+    document.getElementById("create-pair");
+
+const joinPairButton =
+    document.getElementById("join-pair");
+
+const sharePairButton =
+    document.getElementById("share-pair");
+
+const leavePairButton =
+    document.getElementById("leave-pair");
+
+const partnerStatus =
+    document.getElementById("partner-status");
+
+
+// ================================
+// ОКНО ВВОДА ИМЕНИ
+// ================================
+
+const nameModal =
+    document.getElementById("name-modal");
+
+const nameInput =
+    document.getElementById("name-input");
+
+const nameSubmit =
+    document.getElementById("name-submit");
+
+
+if (currentUserName) {
+
+    nameModal.classList.add("hidden");
+
+}
+
+
+nameSubmit.addEventListener("click", saveUserName);
+
+
+nameInput.addEventListener("keydown", (event) => {
+
+    if (event.key === "Enter") {
+
+        saveUserName();
+
+    }
+
+});
+
+
+function saveUserName() {
+
+    const name =
+        nameInput.value.trim();
+
+    if (!name) {
+
+        nameInput.focus();
+
+        return;
+
+    }
+
+    currentUserName = name;
+
+    localStorage.setItem(
+        "ourMoodName",
+        currentUserName
+    );
+
+    nameModal.classList.add("hidden");
+
+}
 
 
 // ================================
@@ -83,8 +165,15 @@ const partnerStatus = document.getElementById("partner-status");
 
 signInAnonymously(auth)
     .catch((error) => {
-        console.error("Ошибка авторизации:", error);
-        message.textContent = "Не удалось подключиться к Firebase 😔";
+
+        console.error(
+            "Ошибка авторизации:",
+            error
+        );
+
+        message.textContent =
+            "Не удалось подключиться к Firebase 😔";
+
     });
 
 
@@ -94,31 +183,51 @@ onAuthStateChanged(auth, async (user) => {
 
     currentUser = user;
 
-    console.log("Firebase user:", currentUser.uid);
+    console.log(
+        "Firebase user:",
+        currentUser.uid
+    );
+
 
     // Если пользователь уже состоит в паре
-    const savedPairId = localStorage.getItem("ourMoodPairId");
+    const savedPairId =
+        localStorage.getItem(
+            "ourMoodPairId"
+        );
+
 
     if (savedPairId) {
 
-    currentPairId = savedPairId;
+        currentPairId =
+            savedPairId;
 
-    sharePairButton.style.display = "block";
+        sharePairButton.style.display =
+            "block";
 
-    await loadPair(savedPairId);
-    listenToPair(savedPairId);
+        await loadPair(savedPairId);
 
-    return;
-}
+        if (currentPairId) {
 
-    // Проверяем ссылку-приглашение Telegram
+            listenToPair(savedPairId);
+
+        }
+
+        return;
+
+    }
+
+
+    // Проверяем Telegram invite
     const startParam =
         tg?.initDataUnsafe?.start_param;
+
 
     if (startParam) {
 
         await joinPairByCode(startParam);
+
     }
+
 });
 
 
@@ -131,17 +240,34 @@ moodButtons.forEach(button => {
     button.addEventListener("click", () => {
 
         moodButtons.forEach(item => {
-            item.classList.remove("selected");
+
+            item.classList.remove(
+                "selected"
+            );
+
         });
 
-        button.classList.add("selected");
+
+        button.classList.add(
+            "selected"
+        );
+
 
         selectedMood = {
-            emoji: button.querySelector("span").textContent,
-            text: button.dataset.mood
+
+            emoji:
+                button.querySelector(
+                    "span"
+                ).textContent,
+
+            text:
+                button.dataset.mood
+
         };
 
+
         message.textContent = "";
+
     });
 
 });
@@ -151,169 +277,323 @@ moodButtons.forEach(button => {
 // СОХРАНЕНИЕ НАСТРОЕНИЯ
 // ================================
 
-saveButton.addEventListener("click", async () => {
+saveButton.addEventListener(
+    "click",
+    async () => {
 
-    if (!selectedMood) {
-        message.textContent = "Сначала выбери настроение 💜";
-        return;
+        if (!selectedMood) {
+
+            message.textContent =
+                "Сначала выбери настроение 💜";
+
+            return;
+
+        }
+
+
+        if (!currentUser) {
+
+            message.textContent =
+                "Подключаемся к серверу...";
+
+            return;
+
+        }
+
+
+        if (!currentPairId) {
+
+            message.textContent =
+                "Сначала создай или подключи пару 💌";
+
+            return;
+
+        }
+
+
+        try {
+
+            const pairRef =
+                doc(
+                    db,
+                    "pairs",
+                    currentPairId
+                );
+
+
+            await updateDoc(
+                pairRef,
+                {
+
+                    [`members.${currentUser.uid}.mood`]:
+                        selectedMood,
+
+                    [`members.${currentUser.uid}.updatedAt`]:
+                        Date.now()
+
+                }
+            );
+
+
+            localStorage.setItem(
+                "ourMood",
+                JSON.stringify(selectedMood)
+            );
+
+
+            message.textContent =
+                `${selectedMood.emoji} Твоё настроение: ${selectedMood.text}`;
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            message.textContent =
+                "Не удалось сохранить настроение 😔";
+
+        }
+
     }
-
-    if (!currentUser) {
-        message.textContent = "Подключаемся к серверу...";
-        return;
-    }
-
-    if (!currentPairId) {
-        message.textContent = "Сначала создай или подключи пару 💌";
-        return;
-    }
-
-    try {
-
-        const pairRef = doc(db, "pairs", currentPairId);
-
-        await updateDoc(pairRef, {
-            [`members.${currentUser.uid}.mood`]: selectedMood,
-            [`members.${currentUser.uid}.updatedAt`]: Date.now()
-        });
-
-        localStorage.setItem(
-            "ourMood",
-            JSON.stringify(selectedMood)
-        );
-
-        message.textContent =
-            `${selectedMood.emoji} Твоё настроение: ${selectedMood.text}`;
-
-    } catch (error) {
-
-        console.error(error);
-
-        message.textContent =
-            "Не удалось сохранить настроение 😔";
-    }
-
-});
+);
 
 
 // ================================
 // СОЗДАНИЕ ПАРЫ
 // ================================
 
-createPairButton.addEventListener("click", async () => {
+createPairButton.addEventListener(
+    "click",
+    async () => {
 
-    if (!currentUser) {
-        alert("Подключаемся к серверу...");
-        return;
-    }
+        if (!currentUser) {
 
-    try {
+            alert(
+                "Подключаемся к серверу..."
+            );
 
-        // Генерируем короткий код
-        const pairCode = generatePairCode();
-
-        const pairRef = doc(db, "pairs", pairCode);
-
-        await setDoc(pairRef, {
-
-            code: pairCode,
-
-            members: {
-                [currentUser.uid]: {
-                    mood: null,
-                    updatedAt: Date.now()
-                }
-            },
-
-            createdAt: Date.now()
-
-        });
-
-        currentPairId = pairCode;
-
-        localStorage.setItem(
-            "ourMoodPairId",
-            pairCode
-        );
-
-        alert(
-            `Ваша пара создана! 💜\n\nКод для партнёра:\n${pairCode}`
-        );
-
-        partnerStatus.textContent =
-            `Код пары: ${pairCode}`;
-        sharePairButton.style.display = "block";
-
-        listenToPair(pairCode);
-
-    } catch (error) {
-
-        console.error(error);
-
-        alert("Не удалось создать пару 😔");
-    }
-
-});
-
-
-// ================================
-// ПОДКЛЮЧЕНИЕ К ПАРТНЁРУ
-// ================================
-
-
-joinPairButton.addEventListener("click", async () => {
-
-    const code = prompt(
-        "Введите код пары 💌"
-    );
-
-    if (!code) return;
-
-    await joinPairByCode(code);
-});
-
-async function joinPairByCode(pairCode) {
-
-    if (!currentUser) {
-        alert("Подключаемся к серверу...");
-        return;
-    }
-
-    pairCode = pairCode.trim().toUpperCase();
-
-    try {
-
-        const pairRef = doc(db, "pairs", pairCode);
-        const pairSnapshot = await getDoc(pairRef);
-
-        if (!pairSnapshot.exists()) {
-            alert("Такой пары не существует 😔");
             return;
+
         }
 
-        const pairData = pairSnapshot.data();
-        const members = pairData.members || {};
-        const memberIds = Object.keys(members);
 
-        // Если пользователь уже в этой паре
-        if (members[currentUser.uid]) {
+        if (!currentUserName) {
 
-            currentPairId = pairCode;
+            nameModal.classList.remove(
+                "hidden"
+            );
+
+            nameInput.focus();
+
+            return;
+
+        }
+
+
+        try {
+
+            const pairCode =
+                generatePairCode();
+
+
+            const pairRef =
+                doc(
+                    db,
+                    "pairs",
+                    pairCode
+                );
+
+
+            await setDoc(
+                pairRef,
+                {
+
+                    code:
+                        pairCode,
+
+                    members: {
+
+                        [currentUser.uid]: {
+
+                            name:
+                                currentUserName,
+
+                            mood:
+                                null,
+
+                            updatedAt:
+                                Date.now()
+
+                        }
+
+                    },
+
+                    createdAt:
+                        Date.now()
+
+                }
+            );
+
+
+            currentPairId =
+                pairCode;
+
 
             localStorage.setItem(
                 "ourMoodPairId",
                 pairCode
             );
 
-            partnerStatus.textContent =
-                "Вы подключены 💜";
 
-            sharePairButton.style.display = "block";
+            alert(
+                `Ваша пара создана! 💜\n\nКод для партнёра:\n${pairCode}`
+            );
+
+
+            partnerStatus.textContent =
+                `Код пары: ${pairCode}`;
+
+
+            sharePairButton.style.display =
+                "block";
+
 
             listenToPair(pairCode);
 
-            return;
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                "Не удалось создать пару 😔"
+            );
+
         }
+
+    }
+);
+
+
+// ================================
+// ПОДКЛЮЧЕНИЕ К ПАРТНЁРУ
+// ================================
+
+joinPairButton.addEventListener(
+    "click",
+    async () => {
+
+        const code =
+            prompt(
+                "Введите код пары 💌"
+            );
+
+
+        if (!code) return;
+
+
+        await joinPairByCode(code);
+
+    }
+);
+
+
+async function joinPairByCode(pairCode) {
+
+    if (!currentUser) {
+
+        alert(
+            "Подключаемся к серверу..."
+        );
+
+        return;
+
+    }
+
+
+    if (!currentUserName) {
+
+        nameModal.classList.remove(
+            "hidden"
+        );
+
+        nameInput.focus();
+
+        return;
+
+    }
+
+
+    pairCode =
+        pairCode
+            .trim()
+            .toUpperCase();
+
+
+    try {
+
+        const pairRef =
+            doc(
+                db,
+                "pairs",
+                pairCode
+            );
+
+
+        const pairSnapshot =
+            await getDoc(pairRef);
+
+
+        if (!pairSnapshot.exists()) {
+
+            alert(
+                "Такой пары не существует 😔"
+            );
+
+            return;
+
+        }
+
+
+        const pairData =
+            pairSnapshot.data();
+
+
+        const members =
+            pairData.members || {};
+
+
+        const memberIds =
+            Object.keys(members);
+
+
+        // Пользователь уже в этой паре
+        if (members[currentUser.uid]) {
+
+            currentPairId =
+                pairCode;
+
+
+            localStorage.setItem(
+                "ourMoodPairId",
+                pairCode
+            );
+
+
+            partnerStatus.textContent =
+                "Вы подключены 💜";
+
+
+            sharePairButton.style.display =
+                "block";
+
+
+            listenToPair(pairCode);
+
+
+            return;
+
+        }
+
 
         // В паре уже два человека
         if (memberIds.length >= 2) {
@@ -323,35 +603,58 @@ async function joinPairByCode(pairCode) {
             );
 
             return;
+
         }
 
+
         // Добавляем нового участника
-        await updateDoc(pairRef, {
+        await updateDoc(
+            pairRef,
+            {
 
-            [`members.${currentUser.uid}`]: {
-                mood: null,
-                updatedAt: Date.now()
+                [`members.${currentUser.uid}`]:
+                    {
+
+                        name:
+                            currentUserName,
+
+                        mood:
+                            null,
+
+                        updatedAt:
+                            Date.now()
+
+                    }
+
             }
+        );
 
-        });
 
-        currentPairId = pairCode;
+        currentPairId =
+            pairCode;
+
 
         localStorage.setItem(
             "ourMoodPairId",
             pairCode
         );
 
+
         partnerStatus.textContent =
             "Вы подключены 💜";
 
-        sharePairButton.style.display = "block";
+
+        sharePairButton.style.display =
+            "block";
+
 
         listenToPair(pairCode);
+
 
         alert(
             "Вы успешно подключились к партнёру! 💜"
         );
+
 
     } catch (error) {
 
@@ -360,52 +663,106 @@ async function joinPairByCode(pairCode) {
             error
         );
 
+
         alert(
             "Не удалось подключиться к паре 😔"
         );
+
     }
+
 }
 
 
-leavePairButton.addEventListener("click", async () => {
+// ================================
+// ВЫХОД ИЗ ПАРЫ
+// ================================
 
-    if (!currentUser || !currentPairId) {
-        alert("Ты сейчас не состоишь в паре 💜");
-        return;
+leavePairButton.addEventListener(
+    "click",
+    async () => {
+
+        if (
+            !currentUser ||
+            !currentPairId
+        ) {
+
+            alert(
+                "Ты сейчас не состоишь в паре 💜"
+            );
+
+            return;
+
+        }
+
+
+        const confirmed =
+            confirm(
+                "Ты точно хочешь покинуть пару? 💔"
+            );
+
+
+        if (!confirmed) return;
+
+
+        try {
+
+            const pairRef =
+                doc(
+                    db,
+                    "pairs",
+                    currentPairId
+                );
+
+
+            await updateDoc(
+                pairRef,
+                {
+
+                    [`members.${currentUser.uid}`]:
+                        deleteField()
+
+                }
+            );
+
+
+            localStorage.removeItem(
+                "ourMoodPairId"
+            );
+
+
+            currentPairId =
+                null;
+
+
+            partnerStatus.textContent =
+                "Пока вы не подключены";
+
+
+            sharePairButton.style.display =
+                "none";
+
+
+            alert(
+                "Ты покинул(а) пару 💜"
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "Ошибка выхода из пары:",
+                error
+            );
+
+
+            alert(
+                "Не удалось покинуть пару 😔"
+            );
+
+        }
+
     }
-
-    const confirmed = confirm(
-        "Ты точно хочешь покинуть пару? 💔"
-    );
-
-    if (!confirmed) return;
-
-    try {
-
-        const pairRef = doc(db, "pairs", currentPairId);
-
-        await updateDoc(pairRef, {
-            [`members.${currentUser.uid}`]: deleteField()
-        });
-
-        localStorage.removeItem("ourMoodPairId");
-
-        currentPairId = null;
-
-        partnerStatus.textContent =
-            "Пока вы не подключены";
-
-        sharePairButton.style.display = "none";
-
-        alert("Ты покинул(а) пару 💜");
-
-    } catch (error) {
-
-        console.error("Ошибка выхода из пары:", error);
-
-        alert("Не удалось покинуть пару 😔");
-    }
-});
+);
 
 
 // ================================
@@ -414,53 +771,89 @@ leavePairButton.addEventListener("click", async () => {
 
 function listenToPair(pairId) {
 
-    const pairRef = doc(db, "pairs", pairId);
-
-    onSnapshot(pairRef, (snapshot) => {
-
-        if (!snapshot.exists()) return;
-
-        const data = snapshot.data();
-
-        const members = data.members || {};
-
-        const memberIds = Object.keys(members);
-
-        // Находим партнёра
-        const partnerId = memberIds.find(
-            id => id !== currentUser.uid
+    const pairRef =
+        doc(
+            db,
+            "pairs",
+            pairId
         );
 
-        if (!partnerId) {
+
+    onSnapshot(
+        pairRef,
+        (snapshot) => {
+
+            if (!snapshot.exists()) {
+
+                return;
+
+            }
+
+
+            const data =
+                snapshot.data();
+
+
+            const members =
+                data.members || {};
+
+
+            const memberIds =
+                Object.keys(members);
+
+
+            // Находим партнёра
+            const partnerId =
+                memberIds.find(
+                    id =>
+                        id !== currentUser.uid
+                );
+
+
+            if (!partnerId) {
+
+                partnerStatus.textContent =
+                    "Ожидаем партнёра 💌";
+
+                return;
+
+            }
+
 
             partnerStatus.textContent =
-                `Ожидаем партнёра 💌`;
+                "Вы подключены 💜";
 
-            return;
+
+            const partner =
+                members[partnerId];
+
+
+            const partnerName =
+                partner.name ||
+                "Партнёр";
+
+
+            if (partner.mood) {
+
+                console.log(
+                    "Настроение партнёра:",
+                    partner.mood
+                );
+
+
+                partnerStatus.textContent =
+                    `${partner.mood.emoji} ${partnerName}: ${partner.mood.text}`;
+
+
+            } else {
+
+                partnerStatus.textContent =
+                    `${partnerName} ещё не выбрал настроение 💭`;
+
+            }
+
         }
-
-        partnerStatus.textContent =
-            "Вы подключены 💜";
-
-        const partner = members[partnerId];
-
-        if (partner.mood) {
-
-            console.log(
-                "Настроение партнёра:",
-                partner.mood
-            );
-
-            partnerStatus.textContent =
-                `${partner.mood.emoji} Партнёр: ${partner.mood.text}`;
-
-        } else {
-
-            partnerStatus.textContent =
-                "Партнёр ещё не выбрал настроение 💭";
-        }
-
-    });
+    );
 
 }
 
@@ -473,9 +866,17 @@ async function loadPair(pairId) {
 
     try {
 
-        const pairRef = doc(db, "pairs", pairId);
+        const pairRef =
+            doc(
+                db,
+                "pairs",
+                pairId
+            );
 
-        const snapshot = await getDoc(pairRef);
+
+        const snapshot =
+            await getDoc(pairRef);
+
 
         if (!snapshot.exists()) {
 
@@ -483,9 +884,21 @@ async function loadPair(pairId) {
                 "ourMoodPairId"
             );
 
-            currentPairId = null;
+
+            currentPairId =
+                null;
+
+
+            sharePairButton.style.display =
+                "none";
+
+
+            partnerStatus.textContent =
+                "Пока вы не подключены";
+
 
             return;
+
         }
 
     } catch (error) {
@@ -494,6 +907,7 @@ async function loadPair(pairId) {
             "Ошибка загрузки пары:",
             error
         );
+
     }
 
 }
@@ -508,19 +922,25 @@ function generatePairCode() {
     const characters =
         "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
+
     let result = "";
+
 
     for (let i = 0; i < 6; i++) {
 
-        result += characters.charAt(
-            Math.floor(
-                Math.random() * characters.length
-            )
-        );
+        result +=
+            characters.charAt(
+                Math.floor(
+                    Math.random() *
+                    characters.length
+                )
+            );
 
     }
 
+
     return result;
+
 }
 
 
@@ -529,13 +949,18 @@ function generatePairCode() {
 // ================================
 
 const savedMood =
-    localStorage.getItem("ourMood");
+    localStorage.getItem(
+        "ourMood"
+    );
+
 
 if (savedMood) {
 
     try {
 
-        const mood = JSON.parse(savedMood);
+        const mood =
+            JSON.parse(savedMood);
+
 
         moodButtons.forEach(button => {
 
@@ -544,12 +969,18 @@ if (savedMood) {
                 mood.text
             ) {
 
-                button.classList.add("selected");
+                button.classList.add(
+                    "selected"
+                );
 
-                selectedMood = mood;
+
+                selectedMood =
+                    mood;
+
             }
 
         });
+
 
     } catch (error) {
 
@@ -557,29 +988,53 @@ if (savedMood) {
             "Ошибка восстановления настроения:",
             error
         );
+
     }
+
 }
-sharePairButton.addEventListener("click", () => {
 
-    if (!currentPairId) return;
 
-    const inviteLink =
-        `https://t.me/OurMoodCoupleBot?startapp=${currentPairId}`;
+// ================================
+// ПРИГЛАШЕНИЕ
+// ================================
 
-    if (tg && tg.openTelegramLink) {
+sharePairButton.addEventListener(
+    "click",
+    () => {
 
-        tg.openTelegramLink(
-            `https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent("Присоединяйся к нашей паре в OurMood 💜")}`
-        );
+        if (!currentPairId) return;
 
-    } else {
 
-        navigator.clipboard.writeText(inviteLink);
+        const inviteLink =
+            `https://t.me/OurMoodCoupleBot?startapp=${currentPairId}`;
 
-        alert("Ссылка скопирована 💌");
+
+        if (
+            tg &&
+            tg.openTelegramLink
+        ) {
+
+            tg.openTelegramLink(
+
+                `https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent("Присоединяйся к нашей паре в OurMood 💜")}`
+
+            );
+
+        } else {
+
+            navigator.clipboard.writeText(
+                inviteLink
+            );
+
+
+            alert(
+                "Ссылка скопирована 💌"
+            );
+
+        }
+
     }
-
-});
+);
 
 
 
