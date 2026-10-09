@@ -260,16 +260,6 @@ createPairButton.addEventListener("click", async () => {
 // ПОДКЛЮЧЕНИЕ К ПАРТНЁРУ
 // ================================
 
-joinPairButton.addEventListener("click", async () => {
-
-    const code = prompt(
-        "Введите код пары 💌"
-    );
-
-    if (!code) return;
-
-    await joinPairByCode(code);
-});
 
 joinPairButton.addEventListener("click", async () => {
 
