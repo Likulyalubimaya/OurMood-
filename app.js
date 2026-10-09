@@ -15,6 +15,7 @@ import {
     setDoc,
     getDoc,
     updateDoc,
+    deleteField,
     onSnapshot
 } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
@@ -72,6 +73,7 @@ const message = document.getElementById("message");
 const createPairButton = document.getElementById("create-pair");
 const joinPairButton = document.getElementById("join-pair");
 const sharePairButton = document.getElementById("share-pair");
+const leavePairButton = document.getElementById("leave-pair");
 const partnerStatus = document.getElementById("partner-status");
 
 
@@ -267,6 +269,58 @@ joinPairButton.addEventListener("click", async () => {
     if (!code) return;
 
     await joinPairByCode(code);
+});
+
+joinPairButton.addEventListener("click", async () => {
+
+    const code = prompt(
+        "Введите код пары 💌"
+    );
+
+    if (!code) return;
+
+    await joinPairByCode(code);
+});
+
+
+leavePairButton.addEventListener("click", async () => {
+
+    if (!currentUser || !currentPairId) {
+        alert("Ты сейчас не состоишь в паре 💜");
+        return;
+    }
+
+    const confirmed = confirm(
+        "Ты точно хочешь покинуть пару? 💔"
+    );
+
+    if (!confirmed) return;
+
+    try {
+
+        const pairRef = doc(db, "pairs", currentPairId);
+
+        await updateDoc(pairRef, {
+            [`members.${currentUser.uid}`]: deleteField()
+        });
+
+        localStorage.removeItem("ourMoodPairId");
+
+        currentPairId = null;
+
+        partnerStatus.textContent =
+            "Пока вы не подключены";
+
+        sharePairButton.style.display = "none";
+
+        alert("Ты покинул(а) пару 💜");
+
+    } catch (error) {
+
+        console.error("Ошибка выхода из пары:", error);
+
+        alert("Не удалось покинуть пару 😔");
+    }
 });
 
 
