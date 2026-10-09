@@ -99,13 +99,15 @@ onAuthStateChanged(auth, async (user) => {
 
     if (savedPairId) {
 
-        currentPairId = savedPairId;
+    currentPairId = savedPairId;
 
-        await loadPair(savedPairId);
-        listenToPair(savedPairId);
+    sharePairButton.style.display = "block";
 
-        return;
-    }
+    await loadPair(savedPairId);
+    listenToPair(savedPairId);
+
+    return;
+}
 
     // Проверяем ссылку-приглашение Telegram
     const startParam =
