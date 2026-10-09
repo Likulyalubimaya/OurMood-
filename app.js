@@ -1,7 +1,6 @@
 // ================================
 // FIREBASE
 // ================================
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 
 import {
@@ -72,7 +71,7 @@ const message = document.getElementById("message");
 
 const createPairButton = document.getElementById("create-pair");
 const joinPairButton = document.getElementById("join-pair");
-
+const sharePairButton = document.getElementById("share-pair");
 const partnerStatus = document.getElementById("partner-status");
 
 
@@ -95,14 +94,26 @@ onAuthStateChanged(auth, async (user) => {
 
     console.log("Firebase user:", currentUser.uid);
 
-    // Проверяем, есть ли уже сохранённая пара
+    // Если пользователь уже состоит в паре
     const savedPairId = localStorage.getItem("ourMoodPairId");
 
     if (savedPairId) {
+
         currentPairId = savedPairId;
 
         await loadPair(savedPairId);
         listenToPair(savedPairId);
+
+        return;
+    }
+
+    // Проверяем ссылку-приглашение Telegram
+    const startParam =
+        tg?.initDataUnsafe?.start_param;
+
+    if (startParam) {
+
+        await joinPairByCode(startParam);
     }
 });
 
@@ -227,6 +238,7 @@ createPairButton.addEventListener("click", async () => {
 
         partnerStatus.textContent =
             `Код пары: ${pairCode}`;
+        sharePairButton.style.display = "block";
 
         listenToPair(pairCode);
 
@@ -246,99 +258,13 @@ createPairButton.addEventListener("click", async () => {
 
 joinPairButton.addEventListener("click", async () => {
 
-    if (!currentUser) {
-        alert("Подключаемся к серверу...");
-        return;
-    }
-
     const code = prompt(
         "Введите код пары 💌"
     );
 
     if (!code) return;
 
-    const pairCode = code.trim().toUpperCase();
-
-    try {
-
-        const pairRef = doc(db, "pairs", pairCode);
-
-        const pairSnapshot = await getDoc(pairRef);
-
-        if (!pairSnapshot.exists()) {
-
-            alert(
-                "Такой пары не существует 😔"
-            );
-
-            return;
-        }
-
-        const pairData = pairSnapshot.data();
-
-        const members = pairData.members || {};
-
-        const memberIds = Object.keys(members);
-
-        // Уже подключён
-        if (members[currentUser.uid]) {
-
-            currentPairId = pairCode;
-
-            localStorage.setItem(
-                "ourMoodPairId",
-                pairCode
-            );
-
-            listenToPair(pairCode);
-
-            return;
-        }
-
-        // В паре уже два человека
-        if (memberIds.length >= 2) {
-
-            alert(
-                "В этой паре уже есть два человека 💜"
-            );
-
-            return;
-        }
-
-        await updateDoc(pairRef, {
-
-            [`members.${currentUser.uid}`]: {
-                mood: null,
-                updatedAt: Date.now()
-            }
-
-        });
-
-        currentPairId = pairCode;
-
-        localStorage.setItem(
-            "ourMoodPairId",
-            pairCode
-        );
-
-        partnerStatus.textContent =
-            "Вы подключены 💜";
-
-        alert(
-            "Вы успешно подключились к партнёру! 💜"
-        );
-
-        listenToPair(pairCode);
-
-    } catch (error) {
-
-        console.error(error);
-
-        alert(
-            "Не удалось подключиться к паре 😔"
-        );
-    }
-
+    await joinPairByCode(code);
 });
 
 
@@ -493,7 +419,27 @@ if (savedMood) {
         );
     }
 }
+sharePairButton.addEventListener("click", () => {
 
+    if (!currentPairId) return;
+
+    const inviteLink =
+        `https://t.me/OurMoodCoupleBot?startapp=${currentPairId}`;
+
+    if (tg && tg.openTelegramLink) {
+
+        tg.openTelegramLink(
+            `https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent("Присоединяйся к нашей паре в OurMood 💜")}`
+        );
+
+    } else {
+
+        navigator.clipboard.writeText(inviteLink);
+
+        alert("Ссылка скопирована 💌");
+    }
+
+});
 
 
 
