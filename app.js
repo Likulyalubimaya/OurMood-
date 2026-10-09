@@ -282,6 +282,100 @@ joinPairButton.addEventListener("click", async () => {
     await joinPairByCode(code);
 });
 
+async function joinPairByCode(pairCode) {
+
+    if (!currentUser) {
+        alert("Подключаемся к серверу...");
+        return;
+    }
+
+    pairCode = pairCode.trim().toUpperCase();
+
+    try {
+
+        const pairRef = doc(db, "pairs", pairCode);
+        const pairSnapshot = await getDoc(pairRef);
+
+        if (!pairSnapshot.exists()) {
+            alert("Такой пары не существует 😔");
+            return;
+        }
+
+        const pairData = pairSnapshot.data();
+        const members = pairData.members || {};
+        const memberIds = Object.keys(members);
+
+        // Если пользователь уже в этой паре
+        if (members[currentUser.uid]) {
+
+            currentPairId = pairCode;
+
+            localStorage.setItem(
+                "ourMoodPairId",
+                pairCode
+            );
+
+            partnerStatus.textContent =
+                "Вы подключены 💜";
+
+            sharePairButton.style.display = "block";
+
+            listenToPair(pairCode);
+
+            return;
+        }
+
+        // В паре уже два человека
+        if (memberIds.length >= 2) {
+
+            alert(
+                "В этой паре уже есть два человека 💜"
+            );
+
+            return;
+        }
+
+        // Добавляем нового участника
+        await updateDoc(pairRef, {
+
+            [`members.${currentUser.uid}`]: {
+                mood: null,
+                updatedAt: Date.now()
+            }
+
+        });
+
+        currentPairId = pairCode;
+
+        localStorage.setItem(
+            "ourMoodPairId",
+            pairCode
+        );
+
+        partnerStatus.textContent =
+            "Вы подключены 💜";
+
+        sharePairButton.style.display = "block";
+
+        listenToPair(pairCode);
+
+        alert(
+            "Вы успешно подключились к партнёру! 💜"
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Ошибка подключения:",
+            error
+        );
+
+        alert(
+            "Не удалось подключиться к паре 😔"
+        );
+    }
+}
+
 
 leavePairButton.addEventListener("click", async () => {
 
