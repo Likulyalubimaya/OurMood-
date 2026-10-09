@@ -66,6 +66,8 @@ let selectedMood = null;
 let currentUser = null;
 let currentPairId = null;
 
+// Имя пользователя.
+// Оно вводится один раз и потом берётся отсюда.
 let currentUserName =
     localStorage.getItem("ourMoodName");
 
@@ -113,6 +115,7 @@ const nameSubmit =
     document.getElementById("name-submit");
 
 
+// Если имя уже есть — окно не показываем
 if (currentUserName) {
 
     nameModal.classList.add("hidden");
@@ -120,25 +123,39 @@ if (currentUserName) {
 }
 
 
-nameSubmit.addEventListener("click", saveUserName);
+// Кнопка "Продолжить"
+nameSubmit.addEventListener(
+    "click",
+    saveUserName
+);
 
 
-nameInput.addEventListener("keydown", (event) => {
+// Enter тоже подтверждает имя
+nameInput.addEventListener(
+    "keydown",
+    (event) => {
 
-    if (event.key === "Enter") {
+        if (event.key === "Enter") {
 
-        saveUserName();
+            saveUserName();
+
+        }
 
     }
+);
 
-});
 
+// ================================
+// СОХРАНЕНИЕ ИМЕНИ
+// ================================
 
 function saveUserName() {
 
     const name =
         nameInput.value.trim();
 
+
+    // Имя не может быть пустым
     if (!name) {
 
         nameInput.focus();
@@ -147,6 +164,8 @@ function saveUserName() {
 
     }
 
+
+    // Сохраняем имя локально
     currentUserName = name;
 
     localStorage.setItem(
@@ -154,7 +173,77 @@ function saveUserName() {
         currentUserName
     );
 
-    nameModal.classList.add("hidden");
+
+    // Закрываем окно
+    nameModal.classList.add(
+        "hidden"
+    );
+
+
+    // Если пользователь уже авторизован
+    // и уже находится в паре —
+    // сразу сохраняем имя в Firebase
+    if (currentUser && currentPairId) {
+
+        saveNameToPair();
+
+    }
+
+}
+
+
+// ================================
+// СОХРАНЕНИЕ ИМЕНИ В ПАРЕ
+// ================================
+
+async function saveNameToPair() {
+
+    if (
+        !currentUser ||
+        !currentPairId ||
+        !currentUserName
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        const pairRef =
+            doc(
+                db,
+                "pairs",
+                currentPairId
+            );
+
+
+        await updateDoc(
+            pairRef,
+            {
+
+                [`members.${currentUser.uid}.name`]:
+                    currentUserName
+
+            }
+        );
+
+
+        console.log(
+            "Имя сохранено в Firebase:",
+            currentUserName
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Ошибка сохранения имени:",
+            error
+        );
+
+    }
 
 }
 
@@ -171,106 +260,144 @@ signInAnonymously(auth)
             error
         );
 
+
         message.textContent =
             "Не удалось подключиться к Firebase 😔";
 
     });
 
 
-onAuthStateChanged(auth, async (user) => {
+// ================================
+// ПРОВЕРКА ПОЛЬЗОВАТЕЛЯ
+// ================================
 
-    if (!user) return;
+onAuthStateChanged(
+    auth,
+    async (user) => {
 
-    currentUser = user;
-
-    console.log(
-        "Firebase user:",
-        currentUser.uid
-    );
+        if (!user) return;
 
 
-    // Если пользователь уже состоит в паре
-    const savedPairId =
-        localStorage.getItem(
-            "ourMoodPairId"
+        currentUser = user;
+
+
+        console.log(
+            "Firebase user:",
+            currentUser.uid
         );
 
 
-    if (savedPairId) {
+        // ====================================
+        // ПРОВЕРЯЕМ СОХРАНЁННУЮ ПАРУ
+        // ====================================
 
-        currentPairId =
-            savedPairId;
+        const savedPairId =
+            localStorage.getItem(
+                "ourMoodPairId"
+            );
 
-        sharePairButton.style.display =
-            "block";
 
-        await loadPair(savedPairId);
+        if (savedPairId) {
 
-        if (currentPairId) {
+            currentPairId =
+                savedPairId;
 
-            listenToPair(savedPairId);
+
+            sharePairButton.style.display =
+                "block";
+
+
+            await loadPair(
+                savedPairId
+            );
+
+
+            if (currentPairId) {
+
+                // Записываем имя в существующую пару
+                await saveNameToPair();
+
+
+                // Слушаем изменения
+                listenToPair(
+                    savedPairId
+                );
+
+            }
+
+
+            return;
 
         }
 
-        return;
+
+        // ====================================
+        // ПРОВЕРЯЕМ TELEGRAM INVITE
+        // ====================================
+
+        const startParam =
+            tg?.initDataUnsafe?.start_param;
+
+
+        if (startParam) {
+
+            await joinPairByCode(
+                startParam
+            );
+
+        }
 
     }
-
-
-    // Проверяем Telegram invite
-    const startParam =
-        tg?.initDataUnsafe?.start_param;
-
-
-    if (startParam) {
-
-        await joinPairByCode(startParam);
-
-    }
-
-});
+);
 
 
 // ================================
 // НАСТРОЕНИЯ
 // ================================
 
-moodButtons.forEach(button => {
+moodButtons.forEach(
+    (button) => {
 
-    button.addEventListener("click", () => {
+        button.addEventListener(
+            "click",
+            () => {
 
-        moodButtons.forEach(item => {
+                moodButtons.forEach(
+                    (item) => {
 
-            item.classList.remove(
-                "selected"
-            );
+                        item.classList.remove(
+                            "selected"
+                        );
 
-        });
+                    }
+                );
 
 
-        button.classList.add(
-            "selected"
+                button.classList.add(
+                    "selected"
+                );
+
+
+                selectedMood = {
+
+                    emoji:
+                        button.querySelector(
+                            "span"
+                        ).textContent,
+
+                    text:
+                        button.dataset.mood
+
+                };
+
+
+                message.textContent = "";
+
+            }
         );
 
-
-        selectedMood = {
-
-            emoji:
-                button.querySelector(
-                    "span"
-                ).textContent,
-
-            text:
-                button.dataset.mood
-
-        };
-
-
-        message.textContent = "";
-
-    });
-
-});
+    }
+);
 
 
 // ================================
@@ -337,7 +464,9 @@ saveButton.addEventListener(
 
             localStorage.setItem(
                 "ourMood",
-                JSON.stringify(selectedMood)
+                JSON.stringify(
+                    selectedMood
+                )
             );
 
 
@@ -347,7 +476,10 @@ saveButton.addEventListener(
 
         } catch (error) {
 
-            console.error(error);
+            console.error(
+                error
+            );
+
 
             message.textContent =
                 "Не удалось сохранить настроение 😔";
@@ -377,13 +509,16 @@ createPairButton.addEventListener(
         }
 
 
+        // Без имени нельзя создать пару
         if (!currentUserName) {
 
             nameModal.classList.remove(
                 "hidden"
             );
 
+
             nameInput.focus();
+
 
             return;
 
@@ -458,11 +593,16 @@ createPairButton.addEventListener(
                 "block";
 
 
-            listenToPair(pairCode);
+            listenToPair(
+                pairCode
+            );
 
         } catch (error) {
 
-            console.error(error);
+            console.error(
+                error
+            );
+
 
             alert(
                 "Не удалось создать пару 😔"
@@ -491,13 +631,21 @@ joinPairButton.addEventListener(
         if (!code) return;
 
 
-        await joinPairByCode(code);
+        await joinPairByCode(
+            code
+        );
 
     }
 );
 
 
-async function joinPairByCode(pairCode) {
+// ================================
+// ПОДКЛЮЧЕНИЕ ПО КОДУ
+// ================================
+
+async function joinPairByCode(
+    pairCode
+) {
 
     if (!currentUser) {
 
@@ -510,13 +658,16 @@ async function joinPairByCode(pairCode) {
     }
 
 
+    // Если имя ещё не введено
     if (!currentUserName) {
 
         nameModal.classList.remove(
             "hidden"
         );
 
+
         nameInput.focus();
+
 
         return;
 
@@ -540,7 +691,9 @@ async function joinPairByCode(pairCode) {
 
 
         const pairSnapshot =
-            await getDoc(pairRef);
+            await getDoc(
+                pairRef
+            );
 
 
         if (!pairSnapshot.exists()) {
@@ -563,11 +716,20 @@ async function joinPairByCode(pairCode) {
 
 
         const memberIds =
-            Object.keys(members);
+            Object.keys(
+                members
+            );
 
 
-        // Пользователь уже в этой паре
-        if (members[currentUser.uid]) {
+        // ====================================
+        // УЖЕ В ЭТОЙ ПАРЕ
+        // ====================================
+
+        if (
+            members[
+                currentUser.uid
+            ]
+        ) {
 
             currentPairId =
                 pairCode;
@@ -579,6 +741,11 @@ async function joinPairByCode(pairCode) {
             );
 
 
+            // На всякий случай
+            // сохраняем имя
+            await saveNameToPair();
+
+
             partnerStatus.textContent =
                 "Вы подключены 💜";
 
@@ -587,7 +754,9 @@ async function joinPairByCode(pairCode) {
                 "block";
 
 
-            listenToPair(pairCode);
+            listenToPair(
+                pairCode
+            );
 
 
             return;
@@ -595,19 +764,28 @@ async function joinPairByCode(pairCode) {
         }
 
 
-        // В паре уже два человека
-        if (memberIds.length >= 2) {
+        // ====================================
+        // В ПАРЕ УЖЕ 2 ЧЕЛОВЕКА
+        // ====================================
+
+        if (
+            memberIds.length >= 2
+        ) {
 
             alert(
                 "В этой паре уже есть два человека 💜"
             );
 
+
             return;
 
         }
 
 
-        // Добавляем нового участника
+        // ====================================
+        // ДОБАВЛЯЕМ ПОЛЬЗОВАТЕЛЯ
+        // ====================================
+
         await updateDoc(
             pairRef,
             {
@@ -648,7 +826,9 @@ async function joinPairByCode(pairCode) {
             "block";
 
 
-        listenToPair(pairCode);
+        listenToPair(
+            pairCode
+        );
 
 
         alert(
@@ -689,6 +869,7 @@ leavePairButton.addEventListener(
             alert(
                 "Ты сейчас не состоишь в паре 💜"
             );
+
 
             return;
 
@@ -769,7 +950,9 @@ leavePairButton.addEventListener(
 // СЛУШАЕМ ИЗМЕНЕНИЯ ПАРЫ
 // ================================
 
-function listenToPair(pairId) {
+function listenToPair(
+    pairId
+) {
 
     const pairRef =
         doc(
@@ -799,40 +982,45 @@ function listenToPair(pairId) {
 
 
             const memberIds =
-                Object.keys(members);
+                Object.keys(
+                    members
+                );
 
 
             // Находим партнёра
             const partnerId =
                 memberIds.find(
                     id =>
-                        id !== currentUser.uid
+                        id !==
+                        currentUser.uid
                 );
 
 
+            // Партнёра пока нет
             if (!partnerId) {
 
                 partnerStatus.textContent =
                     "Ожидаем партнёра 💌";
+
 
                 return;
 
             }
 
 
-            partnerStatus.textContent =
-                "Вы подключены 💜";
-
-
             const partner =
-                members[partnerId];
+                members[
+                    partnerId
+                ];
 
 
+            // Имя партнёра
             const partnerName =
                 partner.name ||
                 "Партнёр";
 
 
+            // Партнёр подключён
             if (partner.mood) {
 
                 console.log(
@@ -843,7 +1031,6 @@ function listenToPair(pairId) {
 
                 partnerStatus.textContent =
                     `${partner.mood.emoji} ${partnerName}: ${partner.mood.text}`;
-
 
             } else {
 
@@ -862,7 +1049,9 @@ function listenToPair(pairId) {
 // ЗАГРУЗКА ПАРЫ
 // ================================
 
-async function loadPair(pairId) {
+async function loadPair(
+    pairId
+) {
 
     try {
 
@@ -875,7 +1064,9 @@ async function loadPair(pairId) {
 
 
         const snapshot =
-            await getDoc(pairRef);
+            await getDoc(
+                pairRef
+            );
 
 
         if (!snapshot.exists()) {
@@ -914,7 +1105,7 @@ async function loadPair(pairId) {
 
 
 // ================================
-// ГЕНЕРАЦИЯ КОДА
+// ГЕНЕРАЦИЯ КОДА ПАРЫ
 // ================================
 
 function generatePairCode() {
@@ -926,7 +1117,11 @@ function generatePairCode() {
     let result = "";
 
 
-    for (let i = 0; i < 6; i++) {
+    for (
+        let i = 0;
+        i < 6;
+        i++
+    ) {
 
         result +=
             characters.charAt(
@@ -959,27 +1154,31 @@ if (savedMood) {
     try {
 
         const mood =
-            JSON.parse(savedMood);
+            JSON.parse(
+                savedMood
+            );
 
 
-        moodButtons.forEach(button => {
+        moodButtons.forEach(
+            (button) => {
 
-            if (
-                button.dataset.mood ===
-                mood.text
-            ) {
+                if (
+                    button.dataset.mood ===
+                    mood.text
+                ) {
 
-                button.classList.add(
-                    "selected"
-                );
+                    button.classList.add(
+                        "selected"
+                    );
 
 
-                selectedMood =
-                    mood;
+                    selectedMood =
+                        mood;
+
+                }
 
             }
-
-        });
+        );
 
 
     } catch (error) {
@@ -1035,6 +1234,3 @@ sharePairButton.addEventListener(
 
     }
 );
-
-
-
