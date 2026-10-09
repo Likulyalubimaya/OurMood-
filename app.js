@@ -41,7 +41,6 @@ const firebaseConfig = {
 // ================================
 
 const app = initializeApp(firebaseConfig);
-
 const auth = getAuth(app);
 const db = getFirestore(app);
 
@@ -66,8 +65,6 @@ let selectedMood = null;
 let currentUser = null;
 let currentPairId = null;
 
-// Имя пользователя.
-// Оно вводится один раз и потом берётся отсюда.
 let currentUserName =
     localStorage.getItem("ourMoodName");
 
@@ -100,6 +97,9 @@ const leavePairButton =
 const partnerStatus =
     document.getElementById("partner-status");
 
+const changeNameButton =
+    document.getElementById("change-name");
+
 
 // ================================
 // ОКНО ВВОДА ИМЕНИ
@@ -115,30 +115,29 @@ const nameSubmit =
     document.getElementById("name-submit");
 
 
-// Если имя уже есть — окно не показываем
+// Если имя уже сохранено,
+// окно первого запуска не показываем
 if (currentUserName) {
-
     nameModal.classList.add("hidden");
-
 }
 
 
-// Кнопка "Продолжить"
+// ================================
+// ПЕРВОЕ ВВОДА ИМЕНИ
+// ================================
+
 nameSubmit.addEventListener(
     "click",
     saveUserName
 );
 
 
-// Enter тоже подтверждает имя
 nameInput.addEventListener(
     "keydown",
     (event) => {
 
         if (event.key === "Enter") {
-
             saveUserName();
-
         }
 
     }
@@ -155,7 +154,6 @@ function saveUserName() {
         nameInput.value.trim();
 
 
-    // Имя не может быть пустым
     if (!name) {
 
         nameInput.focus();
@@ -165,8 +163,19 @@ function saveUserName() {
     }
 
 
-    // Сохраняем имя локально
+    if (name.length > 20) {
+
+        alert(
+            "Имя должно быть не длиннее 20 символов 😔"
+        );
+
+        return;
+
+    }
+
+
     currentUserName = name;
+
 
     localStorage.setItem(
         "ourMoodName",
@@ -174,16 +183,17 @@ function saveUserName() {
     );
 
 
-    // Закрываем окно
     nameModal.classList.add(
         "hidden"
     );
 
 
-    // Если пользователь уже авторизован
-    // и уже находится в паре —
-    // сразу сохраняем имя в Firebase
-    if (currentUser && currentPairId) {
+    // Если уже есть пара —
+    // сохраняем имя в Firebase
+    if (
+        currentUser &&
+        currentPairId
+    ) {
 
         saveNameToPair();
 
@@ -193,7 +203,88 @@ function saveUserName() {
 
 
 // ================================
-// СОХРАНЕНИЕ ИМЕНИ В ПАРЕ
+// ИЗМЕНЕНИЕ ИМЕНИ
+// ================================
+
+if (changeNameButton) {
+
+    changeNameButton.addEventListener(
+        "click",
+        async () => {
+
+            const newName =
+                prompt(
+                    "Введите новое имя 💜",
+                    currentUserName || ""
+                );
+
+
+            // Нажали "Отмена"
+            if (newName === null) {
+                return;
+            }
+
+
+            const trimmedName =
+                newName.trim();
+
+
+            if (!trimmedName) {
+
+                alert(
+                    "Имя не может быть пустым 😔"
+                );
+
+                return;
+
+            }
+
+
+            if (trimmedName.length > 20) {
+
+                alert(
+                    "Имя должно быть не длиннее 20 символов 😔"
+                );
+
+                return;
+
+            }
+
+
+            currentUserName =
+                trimmedName;
+
+
+            // Сохраняем новое имя
+            localStorage.setItem(
+                "ourMoodName",
+                currentUserName
+            );
+
+
+            // Сохраняем новое имя в Firebase
+            if (
+                currentUser &&
+                currentPairId
+            ) {
+
+                await saveNameToPair();
+
+            }
+
+
+            alert(
+                `Имя изменено на «${currentUserName}» 💜`
+            );
+
+        }
+    );
+
+}
+
+
+// ================================
+// СОХРАНЕНИЕ ИМЕНИ В FIREBASE
 // ================================
 
 async function saveNameToPair() {
@@ -231,7 +322,7 @@ async function saveNameToPair() {
 
 
         console.log(
-            "Имя сохранено в Firebase:",
+            "Имя сохранено:",
             currentUserName
         );
 
@@ -253,18 +344,20 @@ async function saveNameToPair() {
 // ================================
 
 signInAnonymously(auth)
-    .catch((error) => {
+    .catch(
+        (error) => {
 
-        console.error(
-            "Ошибка авторизации:",
-            error
-        );
+            console.error(
+                "Ошибка авторизации:",
+                error
+            );
 
 
-        message.textContent =
-            "Не удалось подключиться к Firebase 😔";
+            message.textContent =
+                "Не удалось подключиться к Firebase 😔";
 
-    });
+        }
+    );
 
 
 // ================================
@@ -287,9 +380,9 @@ onAuthStateChanged(
         );
 
 
-        // ====================================
-        // ПРОВЕРЯЕМ СОХРАНЁННУЮ ПАРУ
-        // ====================================
+        // ================================
+        // ВОССТАНОВЛЕНИЕ ПАРЫ
+        // ================================
 
         const savedPairId =
             localStorage.getItem(
@@ -314,11 +407,8 @@ onAuthStateChanged(
 
             if (currentPairId) {
 
-                // Записываем имя в существующую пару
                 await saveNameToPair();
 
-
-                // Слушаем изменения
                 listenToPair(
                     savedPairId
                 );
@@ -331,9 +421,9 @@ onAuthStateChanged(
         }
 
 
-        // ====================================
-        // ПРОВЕРЯЕМ TELEGRAM INVITE
-        // ====================================
+        // ================================
+        // ПОДКЛЮЧЕНИЕ ПО INVITE
+        // ================================
 
         const startParam =
             tg?.initDataUnsafe?.start_param;
@@ -509,7 +599,6 @@ createPairButton.addEventListener(
         }
 
 
-        // Без имени нельзя создать пару
         if (!currentUserName) {
 
             nameModal.classList.remove(
@@ -518,7 +607,6 @@ createPairButton.addEventListener(
 
 
             nameInput.focus();
-
 
             return;
 
@@ -597,6 +685,7 @@ createPairButton.addEventListener(
                 pairCode
             );
 
+
         } catch (error) {
 
             console.error(
@@ -658,7 +747,6 @@ async function joinPairByCode(
     }
 
 
-    // Если имя ещё не введено
     if (!currentUserName) {
 
         nameModal.classList.remove(
@@ -667,7 +755,6 @@ async function joinPairByCode(
 
 
         nameInput.focus();
-
 
         return;
 
@@ -721,10 +808,7 @@ async function joinPairByCode(
             );
 
 
-        // ====================================
-        // УЖЕ В ЭТОЙ ПАРЕ
-        // ====================================
-
+        // Пользователь уже в этой паре
         if (
             members[
                 currentUser.uid
@@ -741,8 +825,6 @@ async function joinPairByCode(
             );
 
 
-            // На всякий случай
-            // сохраняем имя
             await saveNameToPair();
 
 
@@ -764,10 +846,7 @@ async function joinPairByCode(
         }
 
 
-        // ====================================
-        // В ПАРЕ УЖЕ 2 ЧЕЛОВЕКА
-        // ====================================
-
+        // В паре уже два человека
         if (
             memberIds.length >= 2
         ) {
@@ -776,16 +855,12 @@ async function joinPairByCode(
                 "В этой паре уже есть два человека 💜"
             );
 
-
             return;
 
         }
 
 
-        // ====================================
-        // ДОБАВЛЯЕМ ПОЛЬЗОВАТЕЛЯ
-        // ====================================
-
+        // Добавляем нового участника
         await updateDoc(
             pairRef,
             {
@@ -870,7 +945,6 @@ leavePairButton.addEventListener(
                 "Ты сейчас не состоишь в паре 💜"
             );
 
-
             return;
 
         }
@@ -947,7 +1021,7 @@ leavePairButton.addEventListener(
 
 
 // ================================
-// СЛУШАЕМ ИЗМЕНЕНИЯ ПАРЫ
+// СЛУШАЕМ ПАРУ
 // ================================
 
 function listenToPair(
@@ -967,9 +1041,7 @@ function listenToPair(
         (snapshot) => {
 
             if (!snapshot.exists()) {
-
                 return;
-
             }
 
 
@@ -987,7 +1059,6 @@ function listenToPair(
                 );
 
 
-            // Находим партнёра
             const partnerId =
                 memberIds.find(
                     id =>
@@ -1002,7 +1073,6 @@ function listenToPair(
                 partnerStatus.textContent =
                     "Ожидаем партнёра 💌";
 
-
                 return;
 
             }
@@ -1014,20 +1084,13 @@ function listenToPair(
                 ];
 
 
-            // Имя партнёра
             const partnerName =
                 partner.name ||
                 "Партнёр";
 
 
-            // Партнёр подключён
+            // У партнёра есть настроение
             if (partner.mood) {
-
-                console.log(
-                    "Настроение партнёра:",
-                    partner.mood
-                );
-
 
                 partnerStatus.textContent =
                     `${partner.mood.emoji} ${partnerName}: ${partner.mood.text}`;
@@ -1087,10 +1150,8 @@ async function loadPair(
             partnerStatus.textContent =
                 "Пока вы не подключены";
 
-
-            return;
-
         }
+
 
     } catch (error) {
 
@@ -1105,7 +1166,7 @@ async function loadPair(
 
 
 // ================================
-// ГЕНЕРАЦИЯ КОДА ПАРЫ
+// ГЕНЕРАЦИЯ КОДА
 // ================================
 
 function generatePairCode() {
