@@ -54,6 +54,37 @@ if (tg) {
 const telegramUserId =
     tg?.initDataUnsafe?.user?.id || null;
 
+// URL backend-функции для Telegram-уведомлений.
+// Токен Telegram-бота здесь НЕ хранится.
+const NOTIFICATION_FUNCTION_URL =
+    "https://ourmood-notifications.vercel.app/api/notify";
+
+async function notifyPartnerAboutMood(pairId, mood) {
+    if (!NOTIFICATION_FUNCTION_URL || !telegramUserId || !currentUser) {
+        return;
+    }
+
+    try {
+        await fetch(NOTIFICATION_FUNCTION_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                pairId,
+                userId: currentUser.uid,
+                telegramUserId,
+                mood
+            })
+        });
+    } catch (error) {
+        console.warn(
+            "Не удалось отправить запрос на Telegram-уведомление:",
+            error
+        );
+    }
+}
+
 
 // ======================================================
 // DOM
@@ -295,6 +326,10 @@ async function saveProfileToPair() {
 
         }
     );
+    await notifyPartnerAboutMood(
+    currentPairId,
+    selectedMood
+);
 }
 
 
