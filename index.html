@@ -28,19 +28,31 @@
 
     <div class="app">
 
+
         <!-- ========================================= -->
         <!-- ШАПКА -->
         <!-- ========================================= -->
 
         <header>
 
+            <button
+                id="menu-button"
+                class="menu-button"
+                type="button"
+            >
+                ☰
+            </button>
+
+
             <div class="logo">
                 💜
             </div>
 
+
             <h1>
                 OurMood
             </h1>
+
 
             <p class="subtitle">
                 Ваш маленький мир на двоих
@@ -49,7 +61,121 @@
         </header>
 
 
+
+        <!-- ========================================= -->
+        <!-- БОКОВОЕ МЕНЮ -->
+        <!-- ========================================= -->
+
+        <div
+            id="side-menu"
+            class="side-menu"
+        >
+
+            <div class="side-menu-header">
+
+                <h2>
+                    Меню
+                </h2>
+
+
+                <button
+                    id="close-menu"
+                    class="close-menu"
+                    type="button"
+                >
+                    ✕
+                </button>
+
+            </div>
+
+
+            <div class="side-menu-buttons">
+
+
+                <!-- ИЗМЕНИТЬ ПРОФИЛЬ -->
+
+                <button
+                    id="change-profile"
+                    class="secondary-button"
+                    type="button"
+                >
+
+                    ✏️ Изменить профиль
+
+                </button>
+
+
+                <!-- СОЗДАТЬ ПАРУ -->
+
+                <button
+                    id="create-pair"
+                    class="secondary-button"
+                    type="button"
+                >
+
+                    👫 Создать пару
+
+                </button>
+
+
+                <!-- ПРИГЛАСИТЬ -->
+
+                <button
+                    id="share-pair"
+                    class="secondary-button"
+                    type="button"
+                >
+
+                    💌 Пригласить партнёра
+
+                </button>
+
+
+                <!-- ПОДКЛЮЧИТЬСЯ -->
+
+                <button
+                    id="join-pair"
+                    class="secondary-button"
+                    type="button"
+                >
+
+                    🔗 Подключиться к партнёру
+
+                </button>
+
+
+                <!-- ПОКИНУТЬ ПАРУ -->
+
+                <button
+                    id="leave-pair"
+                    class="secondary-button"
+                    type="button"
+                >
+
+                    🚪 Покинуть пару
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- Затемнение фона -->
+
+        <div
+            id="menu-overlay"
+            class="menu-overlay"
+        ></div>
+
+
+
+        <!-- ========================================= -->
+        <!-- ОСНОВНОЙ КОНТЕНТ -->
+        <!-- ========================================= -->
+
         <main>
+
 
             <!-- ========================================= -->
             <!-- ПРИВЕТСТВИЕ -->
@@ -68,6 +194,7 @@
             </section>
 
 
+
             <!-- ========================================= -->
             <!-- ПАРТНЁР -->
             <!-- ========================================= -->
@@ -78,11 +205,13 @@
                     💑
                 </div>
 
+
                 <div class="partner-info">
 
                     <h3>
                         Ваша пара
                     </h3>
+
 
                     <p id="partner-status">
                         Пока вы не подключены
@@ -93,11 +222,109 @@
             </section>
 
 
+
             <!-- ========================================= -->
-            <!-- НАСТРОЕНИЕ -->
+            <!-- КАЛЕНДАРЬ -->
+            <!-- ========================================= -->
+
+            <section class="calendar-section">
+
+
+                <h2>
+                    📅 Наш календарь
+                </h2>
+
+
+                <!-- Переключение месяца -->
+
+                <div class="calendar-header">
+
+
+                    <button
+                        id="prev-month"
+                        class="calendar-arrow"
+                        type="button"
+                    >
+                        ‹
+                    </button>
+
+
+                    <h3 id="calendar-month">
+                        Октябрь 2026
+                    </h3>
+
+
+                    <button
+                        id="next-month"
+                        class="calendar-arrow"
+                        type="button"
+                    >
+                        ›
+                    </button>
+
+                </div>
+
+
+
+                <!-- Дни недели -->
+
+                <div class="calendar-weekdays">
+
+                    <span>
+                        Пн
+                    </span>
+
+                    <span>
+                        Вт
+                    </span>
+
+                    <span>
+                        Ср
+                    </span>
+
+                    <span>
+                        Чт
+                    </span>
+
+                    <span>
+                        Пт
+                    </span>
+
+                    <span>
+                        Сб
+                    </span>
+
+                    <span>
+                        Вс
+                    </span>
+
+                </div>
+
+
+
+                <!-- Дни календаря -->
+
+                <div
+                    id="calendar-days"
+                    class="calendar-days"
+                ></div>
+
+
+                <p
+                    id="calendar-message"
+                    class="message"
+                ></p>
+
+            </section>
+
+
+
+            <!-- ========================================= -->
+            <!-- МОЁ НАСТРОЕНИЕ -->
             <!-- ========================================= -->
 
             <section class="mood-section">
+
 
                 <h2>
                     Моё настроение
@@ -112,6 +339,7 @@
                     <button
                         class="mood"
                         data-mood="Счастлив"
+                        type="button"
                     >
 
                         <span>
@@ -125,11 +353,13 @@
                     </button>
 
 
+
                     <!-- ВЛЮБЛЁН -->
 
                     <button
                         class="mood"
                         data-mood="Влюблён"
+                        type="button"
                     >
 
                         <span>
@@ -143,11 +373,13 @@
                     </button>
 
 
+
                     <!-- СКУЧАЮ -->
 
                     <button
                         class="mood"
                         data-mood="Скучаю"
+                        type="button"
                     >
 
                         <span>
@@ -161,11 +393,13 @@
                     </button>
 
 
+
                     <!-- ГРУСТНО -->
 
                     <button
                         class="mood"
                         data-mood="Грустно"
+                        type="button"
                     >
 
                         <span>
@@ -179,11 +413,13 @@
                     </button>
 
 
+
                     <!-- УСТАЛ -->
 
                     <button
                         class="mood"
                         data-mood="Устал"
+                        type="button"
                     >
 
                         <span>
@@ -197,11 +433,13 @@
                     </button>
 
 
+
                     <!-- ЗЛЮСЬ -->
 
                     <button
                         class="mood"
                         data-mood="Злюсь"
+                        type="button"
                     >
 
                         <span>
@@ -214,15 +452,16 @@
 
                     </button>
 
-
                 </div>
 
 
-                <!-- СОХРАНИТЬ НАСТРОЕНИЕ -->
+
+                <!-- СОХРАНИТЬ -->
 
                 <button
                     id="save-mood"
                     class="primary-button"
+                    type="button"
                 >
 
                     Сохранить настроение
@@ -235,91 +474,10 @@
                     class="message"
                 ></p>
 
-
             </section>
-
-
-            <!-- ========================================= -->
-            <!-- УПРАВЛЕНИЕ ПАРОЙ -->
-            <!-- ========================================= -->
-
-            <section class="invite-section">
-
-                <h2>
-                    💌 Вы вместе?
-                </h2>
-
-
-                <p>
-                    Создайте свою пару и делитесь
-                    настроением друг с другом.
-                </p>
-
-
-                <!-- ИЗМЕНИТЬ ПРОФИЛЬ -->
-
-                <button
-                    id="change-profile"
-                    class="secondary-button"
-                >
-
-                    ✏️ Изменить профиль
-
-                </button>
-
-
-                <!-- СОЗДАТЬ ПАРУ -->
-
-                <button
-                    id="create-pair"
-                    class="secondary-button"
-                >
-
-                    👫 Создать пару
-
-                </button>
-
-
-                <!-- ПРИГЛАСИТЬ -->
-
-                <button
-                    id="share-pair"
-                    class="secondary-button"
-                >
-
-                    💌 Пригласить партнёра
-
-                </button>
-
-
-                <!-- ПОДКЛЮЧИТЬСЯ -->
-
-                <button
-                    id="join-pair"
-                    class="secondary-button"
-                >
-
-                    🔗 Подключиться к партнёру
-
-                </button>
-
-
-                <!-- ПОКИНУТЬ ПАРУ -->
-
-                <button
-                    id="leave-pair"
-                    class="secondary-button"
-                >
-
-                    🚪 Покинуть пару
-
-                </button>
-
-
-            </section>
-
 
         </main>
+
 
 
         <!-- ========================================= -->
@@ -331,7 +489,6 @@
             Сделано с 💜 для двоих
 
         </footer>
-
 
     </div>
 
@@ -352,28 +509,25 @@
             <!-- ИКОНКА -->
 
             <div class="name-modal-emoji">
-
                 💜
-
             </div>
+
 
 
             <!-- ЗАГОЛОВОК -->
 
             <h2 id="profile-modal-title">
-
                 Добро пожаловать в OurMood!
-
             </h2>
+
 
 
             <!-- ПОДЗАГОЛОВОК -->
 
             <p id="profile-modal-subtitle">
-
                 Расскажи немного о себе
-
             </p>
+
 
 
             <!-- ИМЯ -->
@@ -387,13 +541,13 @@
             >
 
 
+
             <!-- ПОЛ -->
 
             <div class="gender-title">
-
                 Твой пол
-
             </div>
+
 
 
             <div class="gender-options">
@@ -410,12 +564,11 @@
                     >
 
                     <span>
-
                         👨 Мужской
-
                     </span>
 
                 </label>
+
 
 
                 <!-- ЖЕНСКИЙ -->
@@ -429,15 +582,13 @@
                     >
 
                     <span>
-
                         👩 Женский
-
                     </span>
 
                 </label>
 
-
             </div>
+
 
 
             <!-- КНОПКА -->
@@ -445,18 +596,85 @@
             <button
                 id="name-submit"
                 class="primary-button"
+                type="button"
             >
 
                 Продолжить →
 
             </button>
 
-
         </div>
 
     </div>
 
+<!-- ОКНО СОБЫТИЯ КАЛЕНДАРЯ -->
+<div id="event-modal" class="event-modal">
+    <div class="event-modal-content">
 
+        <button id="event-modal-close" class="event-modal-close" type="button">
+            ✕
+        </button>
+
+        <div class="event-modal-icon">📅</div>
+
+        <h2 id="event-modal-title">Выбери событие</h2>
+
+        <p id="event-modal-date">12 октября</p>
+
+        <div class="event-options">
+
+            <button class="event-option" data-event="together" type="button">
+                <span class="event-option-icon">💜</span>
+                <span>
+                    <strong>Сегодня вместе</strong>
+                    <small>Отметить день вместе</small>
+                </span>
+            </button>
+
+            <button class="event-option" data-event="date" type="button">
+                <span class="event-option-icon">❤️</span>
+                <span>
+                    <strong>Свидание</strong>
+                    <small>Особенный день для двоих</small>
+                </span>
+            </button>
+
+            <button class="event-option" data-event="holiday" type="button">
+                <span class="event-option-icon">🎉</span>
+                <span>
+                    <strong>Праздник</strong>
+                    <small>День рождения, годовщина и т.д.</small>
+                </span>
+            </button>
+
+            <button class="event-option" data-event="custom" type="button">
+                <span class="event-option-icon">✏️</span>
+                <span>
+                    <strong>Своя отметка</strong>
+                    <small>Написать что-нибудь своё</small>
+                </span>
+            </button>
+
+        </div>
+
+        <div id="custom-event-block" class="custom-event-block">
+
+            <input
+                id="custom-event-input"
+                type="text"
+                maxlength="40"
+                placeholder="Например: Наша годовщина"
+                autocomplete="off"
+            >
+
+            <button id="save-custom-event" class="primary-button" type="button">
+                Сохранить
+            </button>
+
+        </div>
+
+    </div>
+</div>
 
     <!-- ================================================= -->
     <!-- JAVASCRIPT -->
