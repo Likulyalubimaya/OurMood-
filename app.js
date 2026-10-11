@@ -68,6 +68,9 @@ let currentPairId = null;
 let currentUserName =
     localStorage.getItem("ourMoodName");
 
+let currentUserGender =
+    localStorage.getItem("ourMoodGender");
+
 
 // ================================
 // ЭЛЕМЕНТЫ
@@ -97,12 +100,12 @@ const leavePairButton =
 const partnerStatus =
     document.getElementById("partner-status");
 
-const changeNameButton =
-    document.getElementById("change-name");
+const changeProfileButton =
+    document.getElementById("change-profile");
 
 
 // ================================
-// ОКНО ВВОДА ИМЕНИ
+// ОКНО ПРОФИЛЯ
 // ================================
 
 const nameModal =
@@ -114,21 +117,79 @@ const nameInput =
 const nameSubmit =
     document.getElementById("name-submit");
 
+const genderInputs =
+    document.querySelectorAll(
+        'input[name="gender"]'
+    );
 
-// Если имя уже сохранено,
-// окно первого запуска не показываем
-if (currentUserName) {
-    nameModal.classList.add("hidden");
+
+// ================================
+// ПОКАЗ / СКРЫТИЕ ПРОФИЛЯ
+// ================================
+
+function openProfileModal() {
+
+    nameInput.value =
+        currentUserName || "";
+
+
+    genderInputs.forEach(
+        (input) => {
+
+            input.checked =
+                input.value ===
+                currentUserGender;
+
+        }
+    );
+
+
+    nameModal.classList.remove(
+        "hidden"
+    );
+
+
+    setTimeout(
+        () => nameInput.focus(),
+        100
+    );
+
+}
+
+
+function closeProfileModal() {
+
+    nameModal.classList.add(
+        "hidden"
+    );
+
+}
+
+
+// Если имя и пол уже сохранены,
+// окно первого запуска не показываем.
+
+if (
+    currentUserName &&
+    currentUserGender
+) {
+
+    closeProfileModal();
+
+} else {
+
+    openProfileModal();
+
 }
 
 
 // ================================
-// ПЕРВОЕ ВВОДА ИМЕНИ
+// ПЕРВИЧНОЕ СОХРАНЕНИЕ ПРОФИЛЯ
 // ================================
 
 nameSubmit.addEventListener(
     "click",
-    saveUserName
+    saveUserProfile
 );
 
 
@@ -137,26 +198,45 @@ nameInput.addEventListener(
     (event) => {
 
         if (event.key === "Enter") {
-            saveUserName();
+
+            saveUserProfile();
+
         }
 
     }
 );
 
 
-// ================================
-// СОХРАНЕНИЕ ИМЕНИ
-// ================================
-
-function saveUserName() {
+async function saveUserProfile() {
 
     const name =
         nameInput.value.trim();
 
 
+    const selectedGender =
+        document.querySelector(
+            'input[name="gender"]:checked'
+        );
+
+
     if (!name) {
 
+        alert(
+            "Пожалуйста, введи своё имя 💜"
+        );
+
         nameInput.focus();
+
+        return;
+
+    }
+
+
+    if (!selectedGender) {
+
+        alert(
+            "Пожалуйста, выбери пол 💜"
+        );
 
         return;
 
@@ -174,108 +254,55 @@ function saveUserName() {
     }
 
 
-    currentUserName = name;
+    currentUserName =
+        name;
 
 
+    currentUserGender =
+        selectedGender.value;
+
+
+    // Сохраняем локально
     localStorage.setItem(
         "ourMoodName",
         currentUserName
     );
 
 
-    nameModal.classList.add(
-        "hidden"
+    localStorage.setItem(
+        "ourMoodGender",
+        currentUserGender
     );
 
 
-    // Если уже есть пара —
-    // сохраняем имя в Firebase
+    // Если пользователь уже находится
+    // в паре — обновляем Firebase
     if (
         currentUser &&
         currentPairId
     ) {
 
-        saveNameToPair();
+        await saveProfileToPair();
 
     }
+
+
+    closeProfileModal();
 
 }
 
 
 // ================================
-// ИЗМЕНЕНИЕ ИМЕНИ
+// ИЗМЕНЕНИЕ ПРОФИЛЯ
 // ================================
 
-if (changeNameButton) {
+if (changeProfileButton) {
 
-    changeNameButton.addEventListener(
+    changeProfileButton.addEventListener(
         "click",
-        async () => {
+        () => {
 
-            const newName =
-                prompt(
-                    "Введите новое имя 💜",
-                    currentUserName || ""
-                );
-
-
-            // Нажали "Отмена"
-            if (newName === null) {
-                return;
-            }
-
-
-            const trimmedName =
-                newName.trim();
-
-
-            if (!trimmedName) {
-
-                alert(
-                    "Имя не может быть пустым 😔"
-                );
-
-                return;
-
-            }
-
-
-            if (trimmedName.length > 20) {
-
-                alert(
-                    "Имя должно быть не длиннее 20 символов 😔"
-                );
-
-                return;
-
-            }
-
-
-            currentUserName =
-                trimmedName;
-
-
-            // Сохраняем новое имя
-            localStorage.setItem(
-                "ourMoodName",
-                currentUserName
-            );
-
-
-            // Сохраняем новое имя в Firebase
-            if (
-                currentUser &&
-                currentPairId
-            ) {
-
-                await saveNameToPair();
-
-            }
-
-
-            alert(
-                `Имя изменено на «${currentUserName}» 💜`
-            );
+            openProfileModal();
 
         }
     );
@@ -284,15 +311,16 @@ if (changeNameButton) {
 
 
 // ================================
-// СОХРАНЕНИЕ ИМЕНИ В FIREBASE
+// СОХРАНЕНИЕ ПРОФИЛЯ В FIREBASE
 // ================================
 
-async function saveNameToPair() {
+async function saveProfileToPair() {
 
     if (
         !currentUser ||
         !currentPairId ||
-        !currentUserName
+        !currentUserName ||
+        !currentUserGender
     ) {
 
         return;
@@ -315,22 +343,26 @@ async function saveNameToPair() {
             {
 
                 [`members.${currentUser.uid}.name`]:
-                    currentUserName
+                    currentUserName,
+
+                [`members.${currentUser.uid}.gender`]:
+                    currentUserGender
 
             }
         );
 
 
         console.log(
-            "Имя сохранено:",
-            currentUserName
+            "Профиль сохранён:",
+            currentUserName,
+            currentUserGender
         );
 
 
     } catch (error) {
 
         console.error(
-            "Ошибка сохранения имени:",
+            "Ошибка сохранения профиля:",
             error
         );
 
@@ -371,7 +403,8 @@ onAuthStateChanged(
         if (!user) return;
 
 
-        currentUser = user;
+        currentUser =
+            user;
 
 
         console.log(
@@ -407,7 +440,8 @@ onAuthStateChanged(
 
             if (currentPairId) {
 
-                await saveNameToPair();
+                await saveProfileToPair();
+
 
                 listenToPair(
                     savedPairId
@@ -422,7 +456,7 @@ onAuthStateChanged(
 
 
         // ================================
-        // ПОДКЛЮЧЕНИЕ ПО INVITE
+        // INVITE LINK
         // ================================
 
         const startParam =
@@ -481,13 +515,105 @@ moodButtons.forEach(
                 };
 
 
-                message.textContent = "";
+                message.textContent =
+                    "";
 
             }
         );
 
     }
 );
+
+
+// ================================
+// ФОРМА НАСТРОЕНИЯ
+// ================================
+
+function getMoodText(
+    mood,
+    gender
+) {
+
+    if (!mood) {
+        return "";
+    }
+
+
+    const text =
+        mood.toLowerCase();
+
+
+    // Счастлив(а)
+    if (
+        text.includes("счастлив")
+    ) {
+
+        return gender === "female"
+            ? "счастлива"
+            : "счастлив";
+
+    }
+
+
+    // Влюблён(а)
+    if (
+        text.includes("влюбл")
+    ) {
+
+        return gender === "female"
+            ? "влюблена"
+            : "влюблён";
+
+    }
+
+
+    // Устал(а)
+    if (
+        text.includes("устал")
+    ) {
+
+        return gender === "female"
+            ? "устала"
+            : "устал";
+
+    }
+
+
+    // Скучаю
+    if (
+        text.includes("скуч")
+    ) {
+
+        return "скучает";
+
+    }
+
+
+    // Грустно
+    if (
+        text.includes("груст")
+    ) {
+
+        return "грустит";
+
+    }
+
+
+    // Злюсь
+    if (
+        text.includes("зл")
+    ) {
+
+        return "злится";
+
+    }
+
+
+    // Если появится новое настроение,
+    // которого здесь пока нет
+    return mood;
+
+}
 
 
 // ================================
@@ -561,7 +687,7 @@ saveButton.addEventListener(
 
 
             message.textContent =
-                `${selectedMood.emoji} Твоё настроение: ${selectedMood.text}`;
+                `${selectedMood.emoji} Твоё настроение: ${getMoodText(selectedMood.text, currentUserGender)}`;
 
 
         } catch (error) {
@@ -599,14 +725,12 @@ createPairButton.addEventListener(
         }
 
 
-        if (!currentUserName) {
+        if (
+            !currentUserName ||
+            !currentUserGender
+        ) {
 
-            nameModal.classList.remove(
-                "hidden"
-            );
-
-
-            nameInput.focus();
+            openProfileModal();
 
             return;
 
@@ -640,6 +764,9 @@ createPairButton.addEventListener(
 
                             name:
                                 currentUserName,
+
+                            gender:
+                                currentUserGender,
 
                             mood:
                                 null,
@@ -747,14 +874,12 @@ async function joinPairByCode(
     }
 
 
-    if (!currentUserName) {
+    if (
+        !currentUserName ||
+        !currentUserGender
+    ) {
 
-        nameModal.classList.remove(
-            "hidden"
-        );
-
-
-        nameInput.focus();
+        openProfileModal();
 
         return;
 
@@ -808,7 +933,7 @@ async function joinPairByCode(
             );
 
 
-        // Пользователь уже в этой паре
+        // Уже в этой паре
         if (
             members[
                 currentUser.uid
@@ -825,7 +950,7 @@ async function joinPairByCode(
             );
 
 
-            await saveNameToPair();
+            await saveProfileToPair();
 
 
             partnerStatus.textContent =
@@ -860,7 +985,7 @@ async function joinPairByCode(
         }
 
 
-        // Добавляем нового участника
+        // Добавляем участника
         await updateDoc(
             pairRef,
             {
@@ -870,6 +995,9 @@ async function joinPairByCode(
 
                         name:
                             currentUserName,
+
+                        gender:
+                            currentUserGender,
 
                         mood:
                             null,
@@ -1067,7 +1195,6 @@ function listenToPair(
                 );
 
 
-            // Партнёра пока нет
             if (!partnerId) {
 
                 partnerStatus.textContent =
@@ -1089,11 +1216,17 @@ function listenToPair(
                 "Партнёр";
 
 
-            // У партнёра есть настроение
             if (partner.mood) {
 
+                const partnerMood =
+                    getMoodText(
+                        partner.mood.text,
+                        partner.gender
+                    );
+
+
                 partnerStatus.textContent =
-                    `${partner.mood.emoji} ${partnerName}: ${partner.mood.text}`;
+                    `${partner.mood.emoji} ${partnerName}: ${partnerMood}`;
 
             } else {
 

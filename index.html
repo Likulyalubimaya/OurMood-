@@ -92,8 +92,8 @@
                     друг с другом.
                 </p>
 
-                <button id="change-name" class="secondary-button">
-                    ✏️ Изменить имя
+                <button id="change-profile" class="secondary-button">
+                    ✏️ Изменить профиль
                 </button>
 
                 <button id="create-pair" class="secondary-button">
@@ -125,20 +125,13 @@
 ================================ -->
 
 <div id="name-modal" class="name-modal">
-
     <div class="name-modal-content">
 
-        <div class="name-modal-emoji">
-            💜
-        </div>
+        <div class="name-modal-emoji">💜</div>
 
-        <h2>
-            Добро пожаловать в OurMood!
-        </h2>
+        <h2>Добро пожаловать в OurMood!</h2>
 
-        <p>
-            Как тебя зовут?
-        </p>
+        <p>Расскажи немного о себе</p>
 
         <input
             id="name-input"
@@ -148,6 +141,32 @@
             autocomplete="off"
         >
 
+        <div class="gender-title">
+            Твой пол
+        </div>
+
+        <div class="gender-options">
+
+            <label class="gender-option">
+                <input
+                    type="radio"
+                    name="gender"
+                    value="male"
+                >
+                <span>👨 Мужской</span>
+            </label>
+
+            <label class="gender-option">
+                <input
+                    type="radio"
+                    name="gender"
+                    value="female"
+                >
+                <span>👩 Женский</span>
+            </label>
+
+        </div>
+
         <button
             id="name-submit"
             class="primary-button"
@@ -156,7 +175,6 @@
         </button>
 
     </div>
-
 </div>
 
 

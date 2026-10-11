@@ -340,3 +340,45 @@ footer {
     }
 
 }
+/* ================================
+    ПОЛЬЗОВАТЕЛЯ
+================================ */
+
+.gender-title {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #555;
+    text-align: left;
+}
+
+.gender-options {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.gender-option {
+    flex: 1;
+    cursor: pointer;
+}
+
+.gender-option input {
+    display: none;
+}
+
+.gender-option span {
+    display: block;
+    padding: 13px 8px;
+    border: 2px solid #eee;
+    border-radius: 14px;
+    background: #fff;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.gender-option input:checked + span {
+    border-color: #b58cff;
+    background: #f6f0ff;
+}
