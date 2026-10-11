@@ -100,31 +100,92 @@ h1 {
     font-size: 13px;
 }
 
+
+/* ========================================= */
+/* МОЁ НАСТРОЕНИЕ */
+/* ========================================= */
+
+.mood-section {
+    margin-top: 38px;
+}
+
 .mood-section h2,
 .invite-section h2 {
     font-size: 21px;
     margin-bottom: 18px;
 }
 
+
+/* ========================================= */
+/* ПЛАТФОРМА ПОД НАСТРОЕНИЯМИ */
+/* ========================================= */
+
 .mood-grid {
     display: grid;
+
     grid-template-columns: repeat(3, 1fr);
+
     gap: 10px;
+
+    padding: 14px;
+
+    background: linear-gradient(
+        145deg,
+        #241d38,
+        #1c172b
+    );
+
+    border: 1px solid rgba(167, 139, 250, 0.15);
+
+    border-radius: 22px;
+
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
+
+
+/* ========================================= */
+/* КНОПКА НАСТРОЕНИЯ */
+/* ========================================= */
 
 .mood {
     border: 1px solid #39304f;
+
     background: var(--card);
+
     color: var(--text);
+
     border-radius: 17px;
+
     padding: 16px 4px;
+
     cursor: pointer;
-    transition: 0.2s;
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.mood:hover {
+    background: #302744;
+
+    border-color: rgba(167, 139, 250, 0.35);
+
+    transform: translateY(-2px);
+}
+
+.mood:active {
+    transform: scale(0.96);
 }
 
 .mood span {
     display: block;
+
     font-size: 30px;
+
     margin-bottom: 9px;
 }
 
@@ -134,24 +195,42 @@ h1 {
 
 .mood.selected {
     background: #39284e;
+
     border-color: var(--pink);
+
     transform: scale(1.03);
+
+    box-shadow:
+        0 5px 18px rgba(240, 171, 252, 0.12);
 }
+
+
+/* ========================================= */
+/* КНОПКИ */
+/* ========================================= */
 
 .primary-button,
 .secondary-button {
     width: 100%;
+
     border: none;
+
     border-radius: 15px;
+
     padding: 16px;
+
     font-size: 15px;
+
     font-weight: bold;
+
     cursor: pointer;
+
     margin-top: 14px;
 }
 
 .primary-button {
     color: #1a1125;
+
     background: linear-gradient(
         100deg,
         var(--purple),
@@ -161,38 +240,62 @@ h1 {
 
 .secondary-button {
     color: var(--text);
+
     background: #302741;
+
     border: 1px solid #49375e;
 }
 
 .message {
     color: var(--pink);
+
     text-align: center;
+
     margin-top: 12px;
+
     font-size: 13px;
 }
 
+
+/* ========================================= */
+/* ПРИГЛАШЕНИЕ */
+/* ========================================= */
+
 .invite-section {
     margin-top: 35px;
+
     padding: 20px;
+
     border-radius: 20px;
+
     background: var(--card);
 }
 
 .invite-section p {
     font-size: 14px;
+
     margin-bottom: 12px;
 }
 
+
+/* ========================================= */
+/* FOOTER */
+/* ========================================= */
+
 footer {
     text-align: center;
+
     color: #786e8f;
+
     padding: 30px 0 12px;
+
     font-size: 12px;
 }
-/* ================================
-   ОКНО ВВОДА ИМЕНИ
-================================ */
+
+
+/* ========================================= */
+/* ОКНО ВВОДА ИМЕНИ */
+/* ========================================= */
 
 .name-modal {
     position: fixed;
@@ -219,13 +322,11 @@ footer {
     transition: opacity 0.3s ease;
 }
 
-
 .name-modal.hidden {
     opacity: 0;
 
     pointer-events: none;
 }
-
 
 .name-modal-content {
     width: 100%;
@@ -251,13 +352,11 @@ footer {
         nameModalAppear 0.45s ease;
 }
 
-
 .name-modal-emoji {
     font-size: 56px;
 
     margin-bottom: 12px;
 }
-
 
 .name-modal-content h2 {
     margin: 0 0 10px;
@@ -267,7 +366,6 @@ footer {
     color: #333;
 }
 
-
 .name-modal-content p {
     margin: 0 0 20px;
 
@@ -275,7 +373,6 @@ footer {
 
     font-size: 16px;
 }
-
 
 #name-input {
     width: 100%;
@@ -296,11 +393,9 @@ footer {
         border-color 0.2s ease;
 }
 
-
 #name-input:focus {
     border-color: #b58cff;
 }
-
 
 #name-submit {
     width: 100%;
@@ -320,7 +415,6 @@ footer {
     cursor: pointer;
 }
 
-
 @keyframes nameModalAppear {
 
     from {
@@ -338,29 +432,38 @@ footer {
             translateY(0)
             scale(1);
     }
-
 }
-/* ================================
-    ПОЛЬЗОВАТЕЛЯ
-================================ */
+
+
+/* ========================================= */
+/* ПОЛЬЗОВАТЕЛЯ */
+/* ========================================= */
 
 .gender-title {
     margin-top: 20px;
+
     margin-bottom: 10px;
+
     font-size: 16px;
+
     font-weight: 600;
+
     color: #555;
+
     text-align: left;
 }
 
 .gender-options {
     display: flex;
+
     gap: 10px;
+
     margin-bottom: 14px;
 }
 
 .gender-option {
     flex: 1;
+
     cursor: pointer;
 }
 
@@ -370,18 +473,27 @@ footer {
 
 .gender-option span {
     display: block;
+
     padding: 13px 8px;
+
     border: 2px solid #eee;
+
     border-radius: 14px;
+
     background: #fff;
+
     font-size: 14px;
+
     transition: all 0.2s ease;
 }
 
 .gender-option input:checked + span {
     border-color: #b58cff;
+
     background: #f6f0ff;
 }
+
+
 /* ========================================= */
 /* КНОПКА МЕНЮ */
 /* ========================================= */
@@ -392,6 +504,7 @@ header {
 
 .menu-button {
     position: absolute;
+
     top: 50%;
     left: 0;
 
@@ -401,22 +514,28 @@ header {
     height: 42px;
 
     border: none;
+
     border-radius: 12px;
 
     background: #201b30;
+
     color: #f0abfc;
 
     font-size: 24px;
+
     line-height: 1;
 
     cursor: pointer;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 
     z-index: 10;
 }
+
+
 /* ========================================= */
 /* БОКОВОЕ МЕНЮ */
 /* ========================================= */
@@ -443,15 +562,9 @@ header {
     overflow-y: auto;
 }
 
-
-/* Меню открыто */
-
 .side-menu.open {
     left: 0;
 }
-
-
-/* Заголовок меню */
 
 .side-menu-header {
     display: flex;
@@ -462,9 +575,6 @@ header {
     margin-bottom: 25px;
 }
 
-
-/* Надпись "Меню" */
-
 .side-menu-header h2 {
     margin: 0;
 
@@ -473,14 +583,12 @@ header {
     font-size: 24px;
 }
 
-
-/* Крестик */
-
 .close-menu {
     width: 40px;
     height: 40px;
 
     border: none;
+
     border-radius: 10px;
 
     background: transparent;
@@ -492,9 +600,6 @@ header {
     cursor: pointer;
 }
 
-
-/* Кнопки меню */
-
 .side-menu-buttons {
     display: flex;
 
@@ -502,9 +607,6 @@ header {
 
     gap: 12px;
 }
-
-
-/* Затемнение */
 
 .menu-overlay {
     position: fixed;
@@ -522,20 +624,20 @@ header {
     transition: opacity 0.3s ease;
 }
 
-
-/* Затемнение при открытом меню */
-
 .menu-overlay.open {
     opacity: 1;
 
     visibility: visible;
 }
+
+
 /* ========================================= */
 /* КАЛЕНДАРЬ OURMOOD */
 /* ========================================= */
 
 .calendar-section {
     margin-top: 24px;
+
     padding: 22px 18px;
 
     background: linear-gradient(
@@ -555,11 +657,6 @@ header {
     box-sizing: border-box;
 }
 
-
-/* ========================================= */
-/* ЗАГОЛОВОК */
-/* ========================================= */
-
 .calendar-section h2 {
     margin: 0 0 22px;
 
@@ -568,15 +665,11 @@ header {
     color: #f0abfc;
 
     font-size: 21px;
+
     font-weight: 700;
 
     letter-spacing: 0.2px;
 }
-
-
-/* ========================================= */
-/* МЕСЯЦ */
-/* ========================================= */
 
 .calendar-header {
     display: flex;
@@ -587,22 +680,17 @@ header {
     margin-bottom: 20px;
 }
 
-
 .calendar-header h3 {
     margin: 0;
 
     color: #ffffff;
 
     font-size: 18px;
+
     font-weight: 600;
 
     letter-spacing: 0.3px;
 }
-
-
-/* ========================================= */
-/* СТРЕЛКИ */
-/* ========================================= */
 
 .calendar-arrow {
     width: 40px;
@@ -619,11 +707,13 @@ header {
     color: #f0abfc;
 
     font-size: 27px;
+
     line-height: 1;
 
     cursor: pointer;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 
@@ -633,22 +723,15 @@ header {
         border-color 0.15s ease;
 }
 
-
 .calendar-arrow:hover {
     background: #302744;
 
     border-color: rgba(240, 171, 252, 0.3);
 }
 
-
 .calendar-arrow:active {
     transform: scale(0.9);
 }
-
-
-/* ========================================= */
-/* ДНИ НЕДЕЛИ */
-/* ========================================= */
 
 .calendar-weekdays {
     display: grid;
@@ -660,22 +743,17 @@ header {
     margin-bottom: 8px;
 }
 
-
 .calendar-weekdays span {
     text-align: center;
 
     color: #8f87a7;
 
     font-size: 11px;
+
     font-weight: 600;
 
     text-transform: uppercase;
 }
-
-
-/* ========================================= */
-/* СЕТКА ДНЕЙ */
-/* ========================================= */
 
 .calendar-days {
     display: grid;
@@ -685,15 +763,11 @@ header {
     gap: 7px;
 }
 
-
-/* ========================================= */
-/* ОДИН ДЕНЬ */
-/* ========================================= */
-
 .calendar-day {
     position: relative;
 
     width: 100%;
+
     aspect-ratio: 1 / 1;
 
     padding: 0;
@@ -707,11 +781,13 @@ header {
     color: #eeeaf7;
 
     font-size: 14px;
+
     font-weight: 500;
 
     cursor: pointer;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 
@@ -721,7 +797,6 @@ header {
         border-color 0.15s ease;
 }
 
-
 .calendar-day:hover {
     transform: translateY(-2px);
 
@@ -730,15 +805,9 @@ header {
     border-color: rgba(167, 139, 250, 0.3);
 }
 
-
 .calendar-day:active {
     transform: scale(0.94);
 }
-
-
-/* ========================================= */
-/* ПУСТЫЕ ЯЧЕЙКИ */
-/* ========================================= */
 
 .calendar-day.empty {
     background: transparent;
@@ -749,11 +818,6 @@ header {
 
     pointer-events: none;
 }
-
-
-/* ========================================= */
-/* СЕГОДНЯ */
-/* ========================================= */
 
 .calendar-day.today {
     background: linear-gradient(
@@ -772,7 +836,6 @@ header {
         0 4px 15px rgba(167, 139, 250, 0.25);
 }
 
-
 .calendar-day.today:hover {
     background: linear-gradient(
         145deg,
@@ -780,11 +843,6 @@ header {
         #9879ec
     );
 }
-
-
-/* ========================================= */
-/* ВЫБРАННЫЙ ДЕНЬ */
-/* ========================================= */
 
 .calendar-day.selected {
     background: #f0abfc;
@@ -798,11 +856,6 @@ header {
     box-shadow:
         0 4px 15px rgba(240, 171, 252, 0.2);
 }
-
-
-/* ========================================= */
-/* ДЕНЬ С СОБЫТИЕМ */
-/* ========================================= */
 
 .calendar-day.has-event::after {
     content: "";
@@ -818,24 +871,15 @@ header {
 
     background: #f0abfc;
 
-    box-shadow: 0 0 6px rgba(240, 171, 252, 0.5);
+    box-shadow:
+        0 0 6px rgba(240, 171, 252, 0.5);
 }
-
-
-/* ========================================= */
-/* СОБЫТИЕ НА СЕГОДНЯ */
-/* ========================================= */
 
 .calendar-day.today.has-event::after {
     background: #100e1b;
 
     box-shadow: none;
 }
-
-
-/* ========================================= */
-/* СООБЩЕНИЕ КАЛЕНДАРЯ */
-/* ========================================= */
 
 #calendar-message {
     margin: 14px 0 0;
@@ -846,25 +890,32 @@ header {
 
     font-size: 13px;
 }
+
+
 /* ========================================= */
 /* ОКНО СОБЫТИЯ КАЛЕНДАРЯ */
 /* ========================================= */
 
 .event-modal {
     position: fixed;
+
     inset: 0;
+
     z-index: 2000;
 
     display: flex;
+
     align-items: flex-end;
     justify-content: center;
 
     padding: 20px;
 
     background: rgba(5, 4, 12, 0.72);
+
     backdrop-filter: blur(8px);
 
     opacity: 0;
+
     visibility: hidden;
 
     transition:
@@ -874,6 +925,7 @@ header {
 
 .event-modal.open {
     opacity: 1;
+
     visibility: visible;
 }
 
@@ -881,6 +933,7 @@ header {
     position: relative;
 
     width: 100%;
+
     max-width: 430px;
 
     padding: 26px 20px 22px;
@@ -894,6 +947,7 @@ header {
     );
 
     border: 1px solid rgba(167, 139, 250, 0.22);
+
     border-radius: 28px 28px 22px 22px;
 
     box-shadow:
@@ -909,9 +963,6 @@ header {
     transform: translateY(0);
 }
 
-
-/* Кнопка закрытия */
-
 .event-modal-close {
     position: absolute;
 
@@ -922,6 +973,7 @@ header {
     height: 38px;
 
     border: none;
+
     border-radius: 12px;
 
     background: rgba(16, 14, 27, 0.7);
@@ -933,6 +985,7 @@ header {
     cursor: pointer;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 
@@ -948,9 +1001,6 @@ header {
 .event-modal-close:active {
     transform: scale(0.9);
 }
-
-
-/* Иконка */
 
 .event-modal-icon {
     width: 58px;
@@ -969,6 +1019,7 @@ header {
     border: 1px solid rgba(167, 139, 250, 0.2);
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 
@@ -978,9 +1029,6 @@ header {
         0 8px 25px rgba(167, 139, 250, 0.12);
 }
 
-
-/* Заголовок */
-
 #event-modal-title {
     margin: 0;
 
@@ -989,6 +1037,7 @@ header {
     color: #ffffff;
 
     font-size: 21px;
+
     font-weight: 700;
 }
 
@@ -1002,11 +1051,9 @@ header {
     font-size: 14px;
 }
 
-
-/* Варианты */
-
 .event-options {
     display: flex;
+
     flex-direction: column;
 
     gap: 10px;
@@ -1018,6 +1065,7 @@ header {
     padding: 13px;
 
     border: 1px solid rgba(167, 139, 250, 0.12);
+
     border-radius: 17px;
 
     background: rgba(16, 14, 27, 0.62);
@@ -1027,6 +1075,7 @@ header {
     cursor: pointer;
 
     display: flex;
+
     align-items: center;
 
     gap: 13px;
@@ -1051,9 +1100,6 @@ header {
     transform: scale(0.98);
 }
 
-
-/* Иконки вариантов */
-
 .event-option-icon {
     width: 44px;
     height: 44px;
@@ -1065,17 +1111,16 @@ header {
     background: rgba(167, 139, 250, 0.1);
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 
     font-size: 22px;
 }
 
-
-/* Текст вариантов */
-
 .event-option span:last-child {
     display: flex;
+
     flex-direction: column;
 
     gap: 3px;
@@ -1092,9 +1137,6 @@ header {
 
     font-size: 12px;
 }
-
-
-/* Своя отметка */
 
 .custom-event-block {
     display: none;
@@ -1124,6 +1166,7 @@ header {
     margin-bottom: 10px;
 
     border: 1px solid rgba(167, 139, 250, 0.2);
+
     border-radius: 13px;
 
     outline: none;
@@ -1147,7 +1190,9 @@ header {
 }
 
 
-/* На маленьких экранах */
+/* ========================================= */
+/* НА МАЛЕНЬКИХ ЭКРАНАХ */
+/* ========================================= */
 
 @media (max-width: 400px) {
 
@@ -1157,6 +1202,7 @@ header {
 
     .event-modal-content {
         padding: 22px 15px 17px;
+
         border-radius: 24px 24px 18px 18px;
     }
 
