@@ -1171,7 +1171,7 @@ $("save-mood").addEventListener(
         }
 
         try {
-
+console.log("🟢 НАЖАТИЕ СОХРАНИТЬ — начинаем сохранение", selectedMood);
             await updateDoc(
                 doc(
                     db,
@@ -1189,7 +1189,7 @@ $("save-mood").addEventListener(
 
                 }
             );
-
+console.log("🟢 НАСТРОЕНИЕ СОХРАНЕНО");
             await notifyPartnerAboutMood(
     currentPairId,
     selectedMood
