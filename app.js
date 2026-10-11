@@ -410,6 +410,50 @@ function getMoodText(mood, gender) {
 
 }
 
+// ======================================================
+// COUPLE AVATAR
+// ======================================================
+
+function updateCoupleAvatar(members) {
+
+    const avatar = $("couple-avatar");
+
+    if (!avatar) {
+        return;
+    }
+
+    const users = Object.values(members || {});
+
+    if (users.length < 2) {
+        avatar.textContent = "💜";
+        return;
+    }
+
+    const firstGender = users[0].gender;
+    const secondGender = users[1].gender;
+
+    // Два парня
+    if (
+        firstGender === "male" &&
+        secondGender === "male"
+    ) {
+        avatar.textContent = "👨‍❤️‍👨";
+        return;
+    }
+
+    // Две девушки
+    if (
+        firstGender === "female" &&
+        secondGender === "female"
+    ) {
+        avatar.textContent = "👩‍❤️‍👩";
+        return;
+    }
+
+    // Парень + девушка
+    avatar.textContent = "👩‍❤️‍👨";
+}
+
 
 // ======================================================
 // SAVE PROFILE TO PAIR
@@ -704,6 +748,7 @@ function listenToPair(pairId) {
 
             const members =
                 pairData.members || {};
+            updateCoupleAvatar(members);
 
             const ids =
                 Object.keys(members);
