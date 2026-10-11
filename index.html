@@ -10,179 +10,302 @@
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
+
 <body>
 
     <div class="app">
 
+        <!-- Шапка -->
         <header>
             <div class="logo">💜</div>
+
             <h1>OurMood</h1>
-            <p class="subtitle">Ваш маленький мир на двоих</p>
+
+            <p class="subtitle">
+                Ваш маленький мир на двоих
+            </p>
         </header>
+
 
         <main>
 
+            <!-- Приветствие -->
             <section class="welcome">
+
                 <h2>Привет! 👋</h2>
-                <p>Как ты себя чувствуешь сегодня?</p>
+
+                <p>
+                    Как ты себя чувствуешь сегодня?
+                </p>
+
             </section>
 
+
+            <!-- Партнёр -->
             <section class="partner-card">
-                <div class="avatar">💑</div>
+
+                <div class="avatar">
+                    💑
+                </div>
 
                 <div class="partner-info">
-                    <h3>Ваша пара</h3>
+
+                    <h3>
+                        Ваша пара
+                    </h3>
+
                     <p id="partner-status">
                         Пока вы не подключены
                     </p>
+
                 </div>
+
             </section>
 
+
+            <!-- Настроение -->
             <section class="mood-section">
 
-                <h2>Моё настроение</h2>
+                <h2>
+                    Моё настроение
+                </h2>
+
 
                 <div class="mood-grid">
 
-                    <button class="mood" data-mood="Счастлив(а)">
+                    <!-- Счастлив -->
+                    <button
+                        class="mood"
+                        data-mood="Счастлив"
+                    >
                         <span>😊</span>
-                        <small>Счастлив(а)</small>
+                        <small>Счастлив</small>
                     </button>
 
-                    <button class="mood" data-mood="Влюблён(а)">
+
+                    <!-- Влюблён -->
+                    <button
+                        class="mood"
+                        data-mood="Влюблён"
+                    >
                         <span>🥰</span>
-                        <small>Влюблён(а)</small>
+                        <small>Влюблён</small>
                     </button>
 
-                    <button class="mood" data-mood="Скучаю">
+
+                    <!-- Скучаю -->
+                    <button
+                        class="mood"
+                        data-mood="Скучаю"
+                    >
                         <span>🥺</span>
                         <small>Скучаю</small>
                     </button>
 
-                    <button class="mood" data-mood="Грустно">
+
+                    <!-- Грустно -->
+                    <button
+                        class="mood"
+                        data-mood="Грустно"
+                    >
                         <span>😔</span>
                         <small>Грустно</small>
                     </button>
 
-                    <button class="mood" data-mood="Устал(а)">
+
+                    <!-- Устал -->
+                    <button
+                        class="mood"
+                        data-mood="Устал"
+                    >
                         <span>😴</span>
-                        <small>Устал(а)</small>
+                        <small>Устал</small>
                     </button>
 
-                    <button class="mood" data-mood="Злюсь">
+
+                    <!-- Злюсь -->
+                    <button
+                        class="mood"
+                        data-mood="Злюсь"
+                    >
                         <span>😤</span>
                         <small>Злюсь</small>
                     </button>
 
                 </div>
 
-                <button id="save-mood" class="primary-button">
+
+                <button
+                    id="save-mood"
+                    class="primary-button"
+                >
                     Сохранить настроение
                 </button>
 
-                <p id="message" class="message"></p>
+
+                <p
+                    id="message"
+                    class="message"
+                ></p>
 
             </section>
 
+
+            <!-- Управление парой -->
             <section class="invite-section">
-                <h2>💌 Вы вместе?</h2>
+
+                <h2>
+                    💌 Вы вместе?
+                </h2>
 
                 <p>
-                    Создайте свою пару и делитесь настроением
-                    друг с другом.
+                    Создайте свою пару и делитесь настроением друг с другом.
                 </p>
 
-                <button id="change-profile" class="secondary-button">
+
+                <button
+                    id="change-profile"
+                    class="secondary-button"
+                >
                     ✏️ Изменить профиль
                 </button>
 
-                <button id="create-pair" class="secondary-button">
+
+                <button
+                    id="create-pair"
+                    class="secondary-button"
+                >
                     👫 Создать пару
                 </button>
-                
-                <button id="share-pair" class="secondary-button">
+
+
+                <button
+                    id="share-pair"
+                    class="secondary-button"
+                >
                     💌 Пригласить партнёра
                 </button>
 
-                <button id="join-pair" class="secondary-button">
+
+                <button
+                    id="join-pair"
+                    class="secondary-button"
+                >
                     🔗 Подключиться к партнёру
                 </button>
 
-                <button id="leave-pair" class="secondary-button">
+
+                <button
+                    id="leave-pair"
+                    class="secondary-button"
+                >
                     🚪 Покинуть пару
                 </button>
+
             </section>
 
         </main>
 
+
+        <!-- Подвал -->
         <footer>
             Сделано с 💜 для двоих
         </footer>
 
     </div>
-<!-- ================================
-    ОКНО ВВОДА ИМЕНИ
-================================ -->
 
-<div id="name-modal" class="name-modal">
-    <div class="name-modal-content">
 
-        <div class="name-modal-emoji">💜</div>
 
-        <h2>Добро пожаловать в OurMood!</h2>
+    <!-- Модальное окно профиля -->
+    <div
+        id="name-modal"
+        class="name-modal"
+    >
 
-        <p>Расскажи немного о себе</p>
+        <div class="name-modal-content">
 
-        <input
-            id="name-input"
-            type="text"
-            placeholder="Введите своё имя"
-            maxlength="20"
-            autocomplete="off"
-        >
+            <div class="name-modal-emoji">
+                💜
+            </div>
 
-        <div class="gender-title">
-            Твой пол
+
+            <h2>
+                Добро пожаловать в OurMood!
+            </h2>
+
+
+            <p>
+                Расскажи немного о себе
+            </p>
+
+
+            <!-- Имя -->
+            <input
+                id="name-input"
+                type="text"
+                placeholder="Введите своё имя"
+                maxlength="20"
+                autocomplete="off"
+            >
+
+
+            <!-- Пол -->
+            <div class="gender-title">
+                Твой пол
+            </div>
+
+
+            <div class="gender-options">
+
+                <label class="gender-option">
+
+                    <input
+                        type="radio"
+                        name="gender"
+                        value="male"
+                    >
+
+                    <span>
+                        👨 Мужской
+                    </span>
+
+                </label>
+
+
+                <label class="gender-option">
+
+                    <input
+                        type="radio"
+                        name="gender"
+                        value="female"
+                    >
+
+                    <span>
+                        👩 Женский
+                    </span>
+
+                </label>
+
+            </div>
+
+
+            <button
+                id="name-submit"
+                class="primary-button"
+            >
+                Продолжить →
+            </button>
+
         </div>
-
-        <div class="gender-options">
-
-            <label class="gender-option">
-                <input
-                    type="radio"
-                    name="gender"
-                    value="male"
-                >
-                <span>👨 Мужской</span>
-            </label>
-
-            <label class="gender-option">
-                <input
-                    type="radio"
-                    name="gender"
-                    value="female"
-                >
-                <span>👩 Женский</span>
-            </label>
-
-        </div>
-
-        <button
-            id="name-submit"
-            class="primary-button"
-        >
-            Продолжить →
-        </button>
 
     </div>
-</div>
 
 
-
-    <script type="module" src="app.js"></script>
+    <!-- JavaScript -->
+    <script
+        type="module"
+        src="app.js"
+    ></script>
 
 </body>
 </html>
-
-
-
