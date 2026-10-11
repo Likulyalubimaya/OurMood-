@@ -49,6 +49,7 @@ if (tg) {
     tg.expand();
 }
 
+
 // Telegram ID пользователя
 const telegramUserId =
     tg?.initDataUnsafe?.user?.id || null;
