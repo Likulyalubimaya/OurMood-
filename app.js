@@ -33,7 +33,6 @@ const firebaseConfig = {
     measurementId: "G-8PLHN9Q3CT"
 };
 
-
 const app = initializeApp(firebaseConfig);
 
 const auth = getAuth(app);
@@ -70,7 +69,9 @@ const nameInput = $("name-input");
 const nameSubmit = $("name-submit");
 
 const genderInputs = [
-    ...document.querySelectorAll('input[name="gender"]')
+    ...document.querySelectorAll(
+        'input[name="gender"]'
+    )
 ];
 
 const message = $("message");
@@ -81,7 +82,7 @@ const sharePairButton = $("share-pair");
 
 
 // ======================================================
-// СОСТОЯНИЕ ПОЛЬЗОВАТЕЛЯ
+// СОСТОЯНИЕ
 // ======================================================
 
 let currentUser = null;
@@ -100,7 +101,7 @@ let selectedMood = null;
 let stopListening = null;
 
 
-// Ссылка-приглашение из Telegram
+// Код приглашения из Telegram
 let pendingInviteCode =
     tg?.initDataUnsafe?.start_param || null;
 
@@ -109,9 +110,10 @@ let pendingInviteCode =
 // ПРОФИЛЬ
 // ======================================================
 
-function openProfileModal() {
+function openProfileModal(isEditing = false) {
 
     nameInput.value = currentUserName;
+
 
     genderInputs.forEach(input => {
 
@@ -120,13 +122,52 @@ function openProfileModal() {
 
     });
 
+
+    const title =
+        $("profile-modal-title");
+
+    const subtitle =
+        $("profile-modal-subtitle");
+
+
+    // Если это изменение существующего профиля
+    if (isEditing) {
+
+        title.textContent =
+            "Изменение профиля";
+
+        subtitle.textContent =
+            "Измени свои данные";
+
+        nameSubmit.textContent =
+            "Сохранить изменения →";
+
+    }
+
+    // Если это первый запуск
+    else {
+
+        title.textContent =
+            "Добро пожаловать в OurMood!";
+
+        subtitle.textContent =
+            "Расскажи немного о себе";
+
+        nameSubmit.textContent =
+            "Продолжить →";
+
+    }
+
+
     nameModal.classList.remove("hidden");
+
 
     setTimeout(() => {
 
         nameInput.focus();
 
     }, 100);
+
 }
 
 
@@ -169,17 +210,20 @@ function updateMoodButtons() {
 
     moodButtons.forEach(button => {
 
-        const base =
+        const baseMood =
             button.dataset.mood;
 
-        const small =
+        const textElement =
             button.querySelector("small");
 
 
-        if (small && labels[base]) {
+        if (
+            textElement &&
+            labels[baseMood]
+        ) {
 
-            small.textContent =
-                labels[base];
+            textElement.textContent =
+                labels[baseMood];
 
         }
 
@@ -189,7 +233,7 @@ function updateMoodButtons() {
 
 
 // ======================================================
-// ТЕКСТ НАСТРОЕНИЯ ДЛЯ ПАРТНЁРА
+// ТЕКСТ НАСТРОЕНИЯ ПАРТНЁРА
 // ======================================================
 
 function getMoodText(mood, gender) {
@@ -252,11 +296,12 @@ function getMoodText(mood, gender) {
 
 
     return mood;
+
 }
 
 
 // ======================================================
-// СОХРАНЕНИЕ ПРОФИЛЯ В ПАРУ
+// СОХРАНЕНИЕ ПРОФИЛЯ В FIREBASE
 // ======================================================
 
 async function saveProfileToPair() {
@@ -267,12 +312,18 @@ async function saveProfileToPair() {
         !currentUserName ||
         !currentUserGender
     ) {
+
         return;
+
     }
 
 
     await updateDoc(
-        doc(db, "pairs", currentPairId),
+        doc(
+            db,
+            "pairs",
+            currentPairId
+        ),
         {
 
             [`members.${currentUser.uid}.name`]:
@@ -303,6 +354,7 @@ async function saveUserProfile() {
         );
 
 
+    // Проверяем имя
     if (!name) {
 
         alert(
@@ -312,9 +364,11 @@ async function saveUserProfile() {
         nameInput.focus();
 
         return;
+
     }
 
 
+    // Проверяем пол
     if (!selectedGender) {
 
         alert(
@@ -322,6 +376,7 @@ async function saveUserProfile() {
         );
 
         return;
+
     }
 
 
@@ -333,6 +388,7 @@ async function saveUserProfile() {
         selectedGender.value;
 
 
+    // Сохраняем локально
     localStorage.setItem(
         "ourMoodName",
         currentUserName
@@ -345,12 +401,14 @@ async function saveUserProfile() {
     );
 
 
-    // Меняем названия кнопок
+    // Обновляем названия настроений
     updateMoodButtons();
 
 
     try {
 
+        // Если пользователь уже состоит в паре
+        // обновляем профиль в Firebase
         if (
             currentUser &&
             currentPairId
@@ -361,10 +419,12 @@ async function saveUserProfile() {
         }
 
 
+        // Закрываем окно
         closeProfileModal();
 
 
-        // Если пользователь пришёл по приглашению
+        // Если пользователь пришёл
+        // по ссылке приглашения
         if (
             pendingInviteCode &&
             currentUser
@@ -373,13 +433,17 @@ async function saveUserProfile() {
             const code =
                 pendingInviteCode;
 
+
             pendingInviteCode = null;
+
 
             await joinPairByCode(code);
 
         }
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
         console.error(
             "Ошибка сохранения профиля:",
@@ -388,7 +452,7 @@ async function saveUserProfile() {
 
 
         message.textContent =
-            "Профиль сохранён на устройстве, но не удалось обновить пару.";
+            "Не удалось обновить профиль в паре.";
 
     }
 
@@ -396,7 +460,7 @@ async function saveUserProfile() {
 
 
 // ======================================================
-// КНОПКИ ПРОФИЛЯ
+// КНОПКА ПРОФИЛЯ
 // ======================================================
 
 nameSubmit.addEventListener(
@@ -419,14 +483,22 @@ nameInput.addEventListener(
 );
 
 
+// ======================================================
+// ИЗМЕНИТЬ ПРОФИЛЬ
+// ======================================================
+
 $("change-profile").addEventListener(
     "click",
-    openProfileModal
+    () => {
+
+        openProfileModal(true);
+
+    }
 );
 
 
 // ======================================================
-// СОЗДАНИЕ КОДА ПАРЫ
+// ГЕНЕРАЦИЯ КОДА ПАРЫ
 // ======================================================
 
 function generatePairCode() {
@@ -450,11 +522,12 @@ function generatePairCode() {
 
 
 // ======================================================
-// СИНХРОНИЗАЦИЯ ПАРЫ
+// СЛУШАТЬ ПАРУ
 // ======================================================
 
 function listenToPair(pairId) {
 
+    // Удаляем старый listener
     if (stopListening) {
 
         stopListening();
@@ -464,7 +537,11 @@ function listenToPair(pairId) {
 
     stopListening =
         onSnapshot(
-            doc(db, "pairs", pairId),
+            doc(
+                db,
+                "pairs",
+                pairId
+            ),
 
             snapshot => {
 
@@ -474,6 +551,7 @@ function listenToPair(pairId) {
                         "Пара не найдена. Создай новую или подключись снова.";
 
                     return;
+
                 }
 
 
@@ -492,12 +570,14 @@ function listenToPair(pairId) {
                     );
 
 
+                // Партнёра пока нет
                 if (!partnerId) {
 
                     partnerStatus.textContent =
                         "Ожидаем партнёра 💌";
 
                     return;
+
                 }
 
 
@@ -510,6 +590,7 @@ function listenToPair(pairId) {
                     "Партнёр";
 
 
+                // Партнёр выбрал настроение
                 if (partner.mood) {
 
                     partnerStatus.textContent =
@@ -518,7 +599,10 @@ function listenToPair(pairId) {
                             partner.gender
                         )}`;
 
-                } else {
+                }
+
+                // Партнёр ещё ничего не выбрал
+                else {
 
                     partnerStatus.textContent =
                         `${partnerName} ещё не выбрал настроение 💭`;
@@ -554,25 +638,35 @@ async function restorePair(pairId) {
 
         const snapshot =
             await getDoc(
-                doc(db, "pairs", pairId)
+                doc(
+                    db,
+                    "pairs",
+                    pairId
+                )
             );
 
 
+        // Пары больше нет
         if (!snapshot.exists()) {
 
             localStorage.removeItem(
                 "ourMoodPairId"
             );
 
+
             currentPairId = null;
+
 
             sharePairButton.style.display =
                 "none";
 
+
             partnerStatus.textContent =
                 "Пока вы не подключены";
 
+
             return;
+
         }
 
 
@@ -580,25 +674,33 @@ async function restorePair(pairId) {
             snapshot.data().members || {};
 
 
+        // Пользователя больше нет в паре
         if (!members[currentUser.uid]) {
 
             localStorage.removeItem(
                 "ourMoodPairId"
             );
 
+
             currentPairId = null;
+
 
             sharePairButton.style.display =
                 "none";
 
+
             partnerStatus.textContent =
                 "Пока вы не подключены";
 
+
             return;
+
         }
 
 
-        currentPairId = pairId;
+        currentPairId =
+            pairId;
+
 
         sharePairButton.style.display =
             "block";
@@ -606,7 +708,9 @@ async function restorePair(pairId) {
 
         listenToPair(pairId);
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
         console.error(
             "Ошибка загрузки пары:",
@@ -637,9 +741,11 @@ $("create-pair").addEventListener(
             );
 
             return;
+
         }
 
 
+        // Если профиль не заполнен
         if (
             !currentUserName ||
             !currentUserGender
@@ -648,9 +754,11 @@ $("create-pair").addEventListener(
             openProfileModal();
 
             return;
+
         }
 
 
+        // Уже есть пара
         if (currentPairId) {
 
             alert(
@@ -658,6 +766,7 @@ $("create-pair").addEventListener(
             );
 
             return;
+
         }
 
 
@@ -675,6 +784,7 @@ $("create-pair").addEventListener(
                 );
 
 
+            // Проверяем, не занят ли код
             while (
                 (
                     await getDoc(pairRef)
@@ -683,6 +793,7 @@ $("create-pair").addEventListener(
 
                 pairCode =
                     generatePairCode();
+
 
                 pairRef =
                     doc(
@@ -694,11 +805,13 @@ $("create-pair").addEventListener(
             }
 
 
+            // Создаём пару
             await setDoc(
                 pairRef,
                 {
 
-                    code: pairCode,
+                    code:
+                        pairCode,
 
                     members: {
 
@@ -710,7 +823,8 @@ $("create-pair").addEventListener(
                             gender:
                                 currentUserGender,
 
-                            mood: null,
+                            mood:
+                                null,
 
                             updatedAt:
                                 Date.now()
@@ -744,16 +858,24 @@ $("create-pair").addEventListener(
                 "Ожидаем партнёра 💌";
 
 
-            listenToPair(pairCode);
+            listenToPair(
+                pairCode
+            );
 
 
             alert(
                 `Ваша пара создана! 💜\n\nКод для партнёра:\n${pairCode}`
             );
 
-        } catch (error) {
+        }
 
-            console.error(error);
+        catch (error) {
+
+            console.error(
+                "Ошибка создания пары:",
+                error
+            );
+
 
             alert(
                 "Не удалось создать пару 😔"
@@ -771,19 +893,18 @@ $("create-pair").addEventListener(
 
 async function joinPairByCode(rawCode) {
 
+    // Firebase ещё не готов
     if (!currentUser) {
 
         pendingInviteCode =
             rawCode;
 
-        alert(
-            "Подключаемся к серверу..."
-        );
-
         return;
+
     }
 
 
+    // Нет профиля
     if (
         !currentUserName ||
         !currentUserGender
@@ -792,9 +913,12 @@ async function joinPairByCode(rawCode) {
         pendingInviteCode =
             rawCode;
 
+
         openProfileModal();
 
+
         return;
+
     }
 
 
@@ -805,7 +929,9 @@ async function joinPairByCode(rawCode) {
 
 
     if (!pairCode) {
+
         return;
+
     }
 
 
@@ -820,9 +946,12 @@ async function joinPairByCode(rawCode) {
 
 
         const snapshot =
-            await getDoc(pairRef);
+            await getDoc(
+                pairRef
+            );
 
 
+        // Такой пары нет
         if (!snapshot.exists()) {
 
             alert(
@@ -830,6 +959,7 @@ async function joinPairByCode(rawCode) {
             );
 
             return;
+
         }
 
 
@@ -842,7 +972,9 @@ async function joinPairByCode(rawCode) {
 
 
         // Пользователь уже в этой паре
-        if (members[currentUser.uid]) {
+        if (
+            members[currentUser.uid]
+        ) {
 
             currentPairId =
                 pairCode;
@@ -861,10 +993,13 @@ async function joinPairByCode(rawCode) {
                 "block";
 
 
-            listenToPair(pairCode);
+            listenToPair(
+                pairCode
+            );
 
 
             return;
+
         }
 
 
@@ -876,14 +1011,17 @@ async function joinPairByCode(rawCode) {
             );
 
             return;
+
         }
 
 
+        // Добавляем второго пользователя
         await updateDoc(
             pairRef,
             {
 
-                [`members.${currentUser.uid}`]: {
+                [`members.${currentUser.uid}`]:
+                {
 
                     name:
                         currentUserName,
@@ -891,7 +1029,8 @@ async function joinPairByCode(rawCode) {
                     gender:
                         currentUserGender,
 
-                    mood: null,
+                    mood:
+                        null,
 
                     updatedAt:
                         Date.now()
@@ -916,14 +1055,18 @@ async function joinPairByCode(rawCode) {
             "block";
 
 
-        listenToPair(pairCode);
+        listenToPair(
+            pairCode
+        );
 
 
         alert(
             "Вы успешно подключились к партнёру! 💜"
         );
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
         console.error(
             "Ошибка подключения:",
@@ -956,7 +1099,9 @@ $("join-pair").addEventListener(
 
         if (code) {
 
-            await joinPairByCode(code);
+            await joinPairByCode(
+                code
+            );
 
         }
 
@@ -965,7 +1110,7 @@ $("join-pair").addEventListener(
 
 
 // ======================================================
-// ВЫХОД ИЗ ПАРЫ
+// ПОКИНУТЬ ПАРУ
 // ======================================================
 
 $("leave-pair").addEventListener(
@@ -982,6 +1127,7 @@ $("leave-pair").addEventListener(
             );
 
             return;
+
         }
 
 
@@ -992,6 +1138,7 @@ $("leave-pair").addEventListener(
         ) {
 
             return;
+
         }
 
 
@@ -1005,8 +1152,10 @@ $("leave-pair").addEventListener(
                 ),
 
                 {
+
                     [`members.${currentUser.uid}`]:
                         deleteField()
+
                 }
             );
 
@@ -1040,9 +1189,14 @@ $("leave-pair").addEventListener(
             message.textContent =
                 "Ты покинул(а) пару 💜";
 
-        } catch (error) {
+        }
 
-            console.error(error);
+        catch (error) {
+
+            console.error(
+                "Ошибка выхода из пары:",
+                error
+            );
 
 
             alert(
@@ -1066,14 +1220,20 @@ moodButtons.forEach(
             "click",
             () => {
 
+                // Убираем выделение
+                // с остальных кнопок
                 moodButtons.forEach(
-                    item =>
+                    item => {
+
                         item.classList.remove(
                             "selected"
-                        )
+                        );
+
+                    }
                 );
 
 
+                // Выделяем выбранную
                 button.classList.add(
                     "selected"
                 );
@@ -1092,7 +1252,8 @@ moodButtons.forEach(
                 };
 
 
-                message.textContent = "";
+                message.textContent =
+                    "";
 
             }
         );
@@ -1115,6 +1276,7 @@ $("save-mood").addEventListener(
                 "Сначала выбери настроение 💜";
 
             return;
+
         }
 
 
@@ -1124,6 +1286,7 @@ $("save-mood").addEventListener(
                 "Подключаемся к серверу...";
 
             return;
+
         }
 
 
@@ -1133,6 +1296,7 @@ $("save-mood").addEventListener(
                 "Сначала создай или подключи пару 💌";
 
             return;
+
         }
 
 
@@ -1157,9 +1321,12 @@ $("save-mood").addEventListener(
             );
 
 
+            // Сохраняем настроение локально
             localStorage.setItem(
                 "ourMood",
-                JSON.stringify(selectedMood)
+                JSON.stringify(
+                    selectedMood
+                )
             );
 
 
@@ -1169,9 +1336,14 @@ $("save-mood").addEventListener(
                     currentUserGender
                 )}`;
 
-        } catch (error) {
+        }
 
-            console.error(error);
+        catch (error) {
+
+            console.error(
+                "Ошибка сохранения настроения:",
+                error
+            );
 
 
             message.textContent =
@@ -1198,6 +1370,7 @@ sharePairButton.addEventListener(
             );
 
             return;
+
         }
 
 
@@ -1219,7 +1392,9 @@ sharePairButton.addEventListener(
                 shareLink
             );
 
-        } else {
+        }
+
+        else {
 
             try {
 
@@ -1232,7 +1407,9 @@ sharePairButton.addEventListener(
                     "Ссылка-приглашение скопирована 💌"
                 );
 
-            } catch {
+            }
+
+            catch {
 
                 prompt(
                     "Скопируй ссылку-приглашение:",
@@ -1279,21 +1456,28 @@ try {
 
 
                     return (
-                        normalized === key ||
+
+                        normalized === key
+
+                        ||
 
                         (
                             key === "счастлив" &&
                             normalized.includes(
                                 "счастлив"
                             )
-                        ) ||
+                        )
+
+                        ||
 
                         (
                             key === "влюблён" &&
                             normalized.includes(
                                 "влюбл"
                             )
-                        ) ||
+                        )
+
+                        ||
 
                         (
                             key === "устал" &&
@@ -1301,6 +1485,7 @@ try {
                                 "устал"
                             )
                         )
+
                     );
 
                 }
@@ -1330,7 +1515,9 @@ try {
 
     }
 
-} catch (error) {
+}
+
+catch (error) {
 
     console.warn(
         "Не удалось восстановить настроение:",
@@ -1341,7 +1528,7 @@ try {
 
 
 // ======================================================
-// ЗАПУСК
+// НАЧАЛЬНАЯ НАСТРОЙКА
 // ======================================================
 
 updateMoodButtons();
@@ -1354,7 +1541,9 @@ if (
 
     closeProfileModal();
 
-} else {
+}
+
+else {
 
     openProfileModal();
 
@@ -1362,7 +1551,7 @@ if (
 
 
 // ======================================================
-// FIREBASE АВТОРИЗАЦИЯ
+// АВТОРИЗАЦИЯ FIREBASE
 // ======================================================
 
 signInAnonymously(auth)
@@ -1385,13 +1574,17 @@ onAuthStateChanged(
     async user => {
 
         if (!user) {
+
             return;
+
         }
 
 
-        currentUser = user;
+        currentUser =
+            user;
 
 
+        // Восстанавливаем существующую пару
         if (currentPairId) {
 
             await restorePair(
@@ -1401,6 +1594,8 @@ onAuthStateChanged(
         }
 
 
+        // Если пришёл по приглашению
+        // и профиль уже заполнен
         else if (
             pendingInviteCode &&
             currentUserName &&
@@ -1411,7 +1606,8 @@ onAuthStateChanged(
                 pendingInviteCode;
 
 
-            pendingInviteCode = null;
+            pendingInviteCode =
+                null;
 
 
             await joinPairByCode(

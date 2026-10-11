@@ -1,38 +1,65 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>OurMood 💜</title>
 
-    <link rel="stylesheet" href="style.css">
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
 
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script
+        src="https://telegram.org/js/telegram-web-app.js"
+    ></script>
+
 </head>
+
 
 <body>
 
     <div class="app">
 
-        <!-- Шапка -->
-        <header>
-            <div class="logo">💜</div>
+        <!-- ========================================= -->
+        <!-- ШАПКА -->
+        <!-- ========================================= -->
 
-            <h1>OurMood</h1>
+        <header>
+
+            <div class="logo">
+                💜
+            </div>
+
+            <h1>
+                OurMood
+            </h1>
 
             <p class="subtitle">
                 Ваш маленький мир на двоих
             </p>
+
         </header>
 
 
         <main>
 
-            <!-- Приветствие -->
+            <!-- ========================================= -->
+            <!-- ПРИВЕТСТВИЕ -->
+            <!-- ========================================= -->
+
             <section class="welcome">
 
-                <h2>Привет! 👋</h2>
+                <h2>
+                    Привет! 👋
+                </h2>
 
                 <p>
                     Как ты себя чувствуешь сегодня?
@@ -41,7 +68,10 @@
             </section>
 
 
-            <!-- Партнёр -->
+            <!-- ========================================= -->
+            <!-- ПАРТНЁР -->
+            <!-- ========================================= -->
+
             <section class="partner-card">
 
                 <div class="avatar">
@@ -63,7 +93,10 @@
             </section>
 
 
-            <!-- Настроение -->
+            <!-- ========================================= -->
+            <!-- НАСТРОЕНИЕ -->
+            <!-- ========================================= -->
+
             <section class="mood-section">
 
                 <h2>
@@ -73,73 +106,127 @@
 
                 <div class="mood-grid">
 
-                    <!-- Счастлив -->
+
+                    <!-- СЧАСТЛИВ -->
+
                     <button
                         class="mood"
                         data-mood="Счастлив"
                     >
-                        <span>😊</span>
-                        <small>Счастлив</small>
+
+                        <span>
+                            😊
+                        </span>
+
+                        <small>
+                            Счастлив
+                        </small>
+
                     </button>
 
 
-                    <!-- Влюблён -->
+                    <!-- ВЛЮБЛЁН -->
+
                     <button
                         class="mood"
                         data-mood="Влюблён"
                     >
-                        <span>🥰</span>
-                        <small>Влюблён</small>
+
+                        <span>
+                            🥰
+                        </span>
+
+                        <small>
+                            Влюблён
+                        </small>
+
                     </button>
 
 
-                    <!-- Скучаю -->
+                    <!-- СКУЧАЮ -->
+
                     <button
                         class="mood"
                         data-mood="Скучаю"
                     >
-                        <span>🥺</span>
-                        <small>Скучаю</small>
+
+                        <span>
+                            🥺
+                        </span>
+
+                        <small>
+                            Скучаю
+                        </small>
+
                     </button>
 
 
-                    <!-- Грустно -->
+                    <!-- ГРУСТНО -->
+
                     <button
                         class="mood"
                         data-mood="Грустно"
                     >
-                        <span>😔</span>
-                        <small>Грустно</small>
+
+                        <span>
+                            😔
+                        </span>
+
+                        <small>
+                            Грустно
+                        </small>
+
                     </button>
 
 
-                    <!-- Устал -->
+                    <!-- УСТАЛ -->
+
                     <button
                         class="mood"
                         data-mood="Устал"
                     >
-                        <span>😴</span>
-                        <small>Устал</small>
+
+                        <span>
+                            😴
+                        </span>
+
+                        <small>
+                            Устал
+                        </small>
+
                     </button>
 
 
-                    <!-- Злюсь -->
+                    <!-- ЗЛЮСЬ -->
+
                     <button
                         class="mood"
                         data-mood="Злюсь"
                     >
-                        <span>😤</span>
-                        <small>Злюсь</small>
+
+                        <span>
+                            😤
+                        </span>
+
+                        <small>
+                            Злюсь
+                        </small>
+
                     </button>
+
 
                 </div>
 
+
+                <!-- СОХРАНИТЬ НАСТРОЕНИЕ -->
 
                 <button
                     id="save-mood"
                     class="primary-button"
                 >
+
                     Сохранить настроение
+
                 </button>
 
 
@@ -148,75 +235,112 @@
                     class="message"
                 ></p>
 
+
             </section>
 
 
-            <!-- Управление парой -->
+            <!-- ========================================= -->
+            <!-- УПРАВЛЕНИЕ ПАРОЙ -->
+            <!-- ========================================= -->
+
             <section class="invite-section">
 
                 <h2>
                     💌 Вы вместе?
                 </h2>
 
+
                 <p>
-                    Создайте свою пару и делитесь настроением друг с другом.
+                    Создайте свою пару и делитесь
+                    настроением друг с другом.
                 </p>
 
+
+                <!-- ИЗМЕНИТЬ ПРОФИЛЬ -->
 
                 <button
                     id="change-profile"
                     class="secondary-button"
                 >
+
                     ✏️ Изменить профиль
+
                 </button>
 
+
+                <!-- СОЗДАТЬ ПАРУ -->
 
                 <button
                     id="create-pair"
                     class="secondary-button"
                 >
+
                     👫 Создать пару
+
                 </button>
 
+
+                <!-- ПРИГЛАСИТЬ -->
 
                 <button
                     id="share-pair"
                     class="secondary-button"
                 >
+
                     💌 Пригласить партнёра
+
                 </button>
 
+
+                <!-- ПОДКЛЮЧИТЬСЯ -->
 
                 <button
                     id="join-pair"
                     class="secondary-button"
                 >
+
                     🔗 Подключиться к партнёру
+
                 </button>
 
+
+                <!-- ПОКИНУТЬ ПАРУ -->
 
                 <button
                     id="leave-pair"
                     class="secondary-button"
                 >
+
                     🚪 Покинуть пару
+
                 </button>
 
+
             </section>
+
 
         </main>
 
 
-        <!-- Подвал -->
+        <!-- ========================================= -->
+        <!-- FOOTER -->
+        <!-- ========================================= -->
+
         <footer>
+
             Сделано с 💜 для двоих
+
         </footer>
+
 
     </div>
 
 
 
-    <!-- Модальное окно профиля -->
+    <!-- ================================================= -->
+    <!-- МОДАЛЬНОЕ ОКНО ПРОФИЛЯ -->
+    <!-- ================================================= -->
+
     <div
         id="name-modal"
         class="name-modal"
@@ -224,22 +348,36 @@
 
         <div class="name-modal-content">
 
+
+            <!-- ИКОНКА -->
+
             <div class="name-modal-emoji">
+
                 💜
+
             </div>
 
 
-            <h2>
+            <!-- ЗАГОЛОВОК -->
+
+            <h2 id="profile-modal-title">
+
                 Добро пожаловать в OurMood!
+
             </h2>
 
 
-            <p>
+            <!-- ПОДЗАГОЛОВОК -->
+
+            <p id="profile-modal-subtitle">
+
                 Расскажи немного о себе
+
             </p>
 
 
-            <!-- Имя -->
+            <!-- ИМЯ -->
+
             <input
                 id="name-input"
                 type="text"
@@ -249,13 +387,19 @@
             >
 
 
-            <!-- Пол -->
+            <!-- ПОЛ -->
+
             <div class="gender-title">
+
                 Твой пол
+
             </div>
 
 
             <div class="gender-options">
+
+
+                <!-- МУЖСКОЙ -->
 
                 <label class="gender-option">
 
@@ -266,11 +410,15 @@
                     >
 
                     <span>
+
                         👨 Мужской
+
                     </span>
 
                 </label>
 
+
+                <!-- ЖЕНСКИЙ -->
 
                 <label class="gender-option">
 
@@ -281,31 +429,45 @@
                     >
 
                     <span>
+
                         👩 Женский
+
                     </span>
 
                 </label>
 
+
             </div>
 
+
+            <!-- КНОПКА -->
 
             <button
                 id="name-submit"
                 class="primary-button"
             >
+
                 Продолжить →
+
             </button>
+
 
         </div>
 
     </div>
 
 
-    <!-- JavaScript -->
+
+    <!-- ================================================= -->
+    <!-- JAVASCRIPT -->
+    <!-- ================================================= -->
+
     <script
         type="module"
         src="app.js"
     ></script>
 
+
 </body>
+
 </html>
