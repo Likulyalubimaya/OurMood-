@@ -60,6 +60,7 @@ const NOTIFICATION_FUNCTION_URL =
     "https://ourmood-notifications.vercel.app/api/notify";
 
 async function notifyPartnerAboutMood(pairId, mood) {
+    console.log("🔔 notifyPartnerAboutMood ВЫЗВАНА", pairId, mood);
     if (!NOTIFICATION_FUNCTION_URL || !telegramUserId || !currentUser) {
         return;
     }
@@ -326,10 +327,6 @@ async function saveProfileToPair() {
 
         }
     );
-    await notifyPartnerAboutMood(
-    currentPairId,
-    selectedMood
-);
 }
 
 
@@ -1192,6 +1189,11 @@ $("save-mood").addEventListener(
 
                 }
             );
+
+            await notifyPartnerAboutMood(
+    currentPairId,
+    selectedMood
+);
 
             // Сохраняем настроение локально
             localStorage.setItem(
