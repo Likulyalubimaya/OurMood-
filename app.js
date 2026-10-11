@@ -1,7 +1,4 @@
-import {
-    initializeApp
-} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 import {
     getAuth,
     signInAnonymously,
@@ -54,11 +51,81 @@ const telegramUserId =
 
 
 // ======================================================
-// УВЕДОМЛЕНИЯ
+// NOTIFICATIONS
 // ======================================================
 
 const NOTIFICATION_FUNCTION_URL =
     "https://ourmood-notifications.vercel.app/api/notify";
+
+
+// ======================================================
+// HELPER
+// ======================================================
+
+const $ = id => document.getElementById(id);
+
+
+// ======================================================
+// DOM
+// ======================================================
+
+const moodButtons = [
+    ...document.querySelectorAll(".mood")
+];
+
+const nameModal = $("name-modal");
+const nameInput = $("name-input");
+const nameSubmit = $("name-submit");
+
+const genderInputs = [
+    ...document.querySelectorAll('input[name="gender"]')
+];
+
+const message = $("message");
+const partnerStatus = $("partner-status");
+const sharePairButton = $("share-pair");
+
+
+// ======================================================
+// STATE
+// ======================================================
+
+let currentUser = null;
+
+let currentPairId =
+    localStorage.getItem("ourMoodPairId") || null;
+
+let currentUserName =
+    localStorage.getItem("ourMoodName") || "";
+
+let currentUserGender =
+    localStorage.getItem("ourMoodGender") || "";
+
+let selectedMood = null;
+
+let stopListening = null;
+
+let pendingInviteCode =
+    tg?.initDataUnsafe?.start_param || null;
+
+
+// ======================================================
+// CALENDAR STATE
+// ======================================================
+
+// Все события теперь берутся из Firebase.
+// Благодаря этому оба участника видят один календарь.
+
+let calendarEvents = {};
+
+let selectedCalendarDate = null;
+
+let calendarDate = new Date();
+
+
+// ======================================================
+// NOTIFY PARTNER
+// ======================================================
 
 async function notifyPartnerAboutMood(pairId, mood) {
 
@@ -108,110 +175,28 @@ async function notifyPartnerAboutMood(pairId, mood) {
 
 
 // ======================================================
-// DOM
+// MENU
 // ======================================================
 
-const $ = id =>
-    document.getElementById(id);
-
-const moodButtons = [
-    ...document.querySelectorAll(".mood")
-];
-
-const nameModal =
-    $("name-modal");
-
-const nameInput =
-    $("name-input");
-
-const nameSubmit =
-    $("name-submit");
-
-const genderInputs = [
-    ...document.querySelectorAll(
-        'input[name="gender"]'
-    )
-];
-
-const message =
-    $("message");
-
-const partnerStatus =
-    $("partner-status");
-
-const sharePairButton =
-    $("share-pair");
-
-
-// ======================================================
-// СОСТОЯНИЕ
-// ======================================================
-
-let currentUser = null;
-
-let currentPairId =
-    localStorage.getItem(
-        "ourMoodPairId"
-    ) || null;
-
-let currentUserName =
-    localStorage.getItem(
-        "ourMoodName"
-    ) || "";
-
-let currentUserGender =
-    localStorage.getItem(
-        "ourMoodGender"
-    ) || "";
-
-let selectedMood = null;
-
-let stopListening = null;
-
-let pendingInviteCode =
-    tg?.initDataUnsafe?.start_param || null;
-
-
-// ======================================================
-// МЕНЮ
-// ======================================================
-
-const menuButton =
-    $("menu-button");
-
-const closeMenuButton =
-    $("close-menu");
-
-const sideMenu =
-    $("side-menu");
-
-const menuOverlay =
-    $("menu-overlay");
+const menuButton = $("menu-button");
+const closeMenuButton = $("close-menu");
+const sideMenu = $("side-menu");
+const menuOverlay = $("menu-overlay");
 
 
 function openMenu() {
 
-    sideMenu?.classList.add(
-        "open"
-    );
+    sideMenu?.classList.add("open");
 
-    menuOverlay?.classList.add(
-        "open"
-    );
-
+    menuOverlay?.classList.add("open");
 }
 
 
 function closeMenu() {
 
-    sideMenu?.classList.remove(
-        "open"
-    );
+    sideMenu?.classList.remove("open");
 
-    menuOverlay?.classList.remove(
-        "open"
-    );
-
+    menuOverlay?.classList.remove("open");
 }
 
 
@@ -232,25 +217,24 @@ menuOverlay?.addEventListener(
 
 
 // ======================================================
-// ПРОФИЛЬ
+// PROFILE
 // ======================================================
 
-function openProfileModal(
-    isEditing = false
-) {
+function openProfileModal(isEditing = false) {
 
-    nameInput.value =
-        currentUserName;
+    if (!nameModal || !nameInput) {
+        return;
+    }
 
-    genderInputs.forEach(
-        input => {
+    nameInput.value = currentUserName;
 
-            input.checked =
-                input.value ===
-                currentUserGender;
+    genderInputs.forEach(input => {
 
-        }
-    );
+        input.checked =
+            input.value === currentUserGender;
+
+    });
+
 
     const title =
         $("profile-modal-title");
@@ -261,51 +245,62 @@ function openProfileModal(
 
     if (isEditing) {
 
-        title.textContent =
-            "Изменение профиля";
+        if (title) {
+            title.textContent =
+                "Изменение профиля";
+        }
 
-        subtitle.textContent =
-            "Измени свои данные";
+        if (subtitle) {
+            subtitle.textContent =
+                "Измени свои данные";
+        }
 
-        nameSubmit.textContent =
-            "Сохранить изменения →";
+        if (nameSubmit) {
+            nameSubmit.textContent =
+                "Сохранить изменения →";
+        }
 
     } else {
 
-        title.textContent =
-            "Добро пожаловать в OurMood!";
+        if (title) {
+            title.textContent =
+                "Добро пожаловать в OurMood!";
+        }
 
-        subtitle.textContent =
-            "Расскажи немного о себе";
+        if (subtitle) {
+            subtitle.textContent =
+                "Расскажи немного о себе";
+        }
 
-        nameSubmit.textContent =
-            "Продолжить →";
+        if (nameSubmit) {
+            nameSubmit.textContent =
+                "Продолжить →";
+        }
 
     }
 
-    nameModal.classList.remove(
-        "hidden"
-    );
 
-    setTimeout(
-        () => nameInput.focus(),
-        100
-    );
+    nameModal.classList.remove("hidden");
+
+
+    setTimeout(() => {
+
+        nameInput.focus();
+
+    }, 100);
 
 }
 
 
 function closeProfileModal() {
 
-    nameModal.classList.add(
-        "hidden"
-    );
+    nameModal?.classList.add("hidden");
 
 }
 
 
 // ======================================================
-// НАЗВАНИЯ НАСТРОЕНИЙ
+// MOOD LABELS
 // ======================================================
 
 function updateMoodButtons() {
@@ -313,65 +308,51 @@ function updateMoodButtons() {
     const female =
         currentUserGender === "female";
 
+
     const labels = {
 
         "Счастлив":
-            female
-                ? "Счастлива"
-                : "Счастлив",
+            female ? "Счастлива" : "Счастлив",
 
         "Влюблён":
-            female
-                ? "Влюблена"
-                : "Влюблён",
+            female ? "Влюблена" : "Влюблён",
 
         "Устал":
-            female
-                ? "Устала"
-                : "Устал"
+            female ? "Устала" : "Устал"
 
     };
 
 
-    moodButtons.forEach(
-        button => {
+    moodButtons.forEach(button => {
 
-            const baseMood =
-                button.dataset.mood;
+        const label =
+            button.querySelector("small");
 
-            const textElement =
-                button.querySelector(
-                    "small"
-                );
+        if (
+            label &&
+            labels[button.dataset.mood]
+        ) {
 
-            if (
-                textElement &&
-                labels[baseMood]
-            ) {
-
-                textElement.textContent =
-                    labels[baseMood];
-
-            }
+            label.textContent =
+                labels[button.dataset.mood];
 
         }
-    );
+
+    });
 
 }
 
 
 // ======================================================
-// ТЕКСТ НАСТРОЕНИЯ ПАРТНЁРА
+// PARTNER MOOD TEXT
 // ======================================================
 
-function getMoodText(
-    mood,
-    gender
-) {
+function getMoodText(mood, gender) {
 
     if (!mood) {
         return "";
     }
+
 
     const text =
         String(mood).toLowerCase();
@@ -405,15 +386,23 @@ function getMoodText(
 
 
     if (text.includes("скуч")) {
+
         return "скучает";
+
     }
+
 
     if (text.includes("груст")) {
+
         return "грустит";
+
     }
 
+
     if (text.includes("зл")) {
+
         return "злится";
+
     }
 
 
@@ -423,7 +412,7 @@ function getMoodText(
 
 
 // ======================================================
-// СОХРАНЕНИЕ ПРОФИЛЯ В ПАРЕ
+// SAVE PROFILE TO PAIR
 // ======================================================
 
 async function saveProfileToPair() {
@@ -437,14 +426,16 @@ async function saveProfileToPair() {
         return;
     }
 
+
     await updateDoc(
+
         doc(
             db,
             "pairs",
             currentPairId
         ),
-        {
 
+        {
             [`members.${currentUser.uid}.name`]:
                 currentUserName,
 
@@ -453,23 +444,23 @@ async function saveProfileToPair() {
 
             [`members.${currentUser.uid}.telegramId`]:
                 telegramUserId
-
         }
+
     );
 
 }
 
 
 // ======================================================
-// СОХРАНЕНИЕ ПРОФИЛЯ
+// SAVE USER PROFILE
 // ======================================================
 
 async function saveUserProfile() {
 
     const name =
-        nameInput.value.trim();
+        nameInput?.value.trim();
 
-    const selectedGender =
+    const gender =
         document.querySelector(
             'input[name="gender"]:checked'
         );
@@ -481,21 +472,19 @@ async function saveUserProfile() {
             "Пожалуйста, введи своё имя 💜"
         );
 
-        nameInput.focus();
+        nameInput?.focus();
 
         return;
-
     }
 
 
-    if (!selectedGender) {
+    if (!gender) {
 
         alert(
             "Пожалуйста, выбери пол 💜"
         );
 
         return;
-
     }
 
 
@@ -503,7 +492,7 @@ async function saveUserProfile() {
         name.slice(0, 20);
 
     currentUserGender =
-        selectedGender.value;
+        gender.value;
 
 
     localStorage.setItem(
@@ -543,12 +532,9 @@ async function saveUserProfile() {
             const code =
                 pendingInviteCode;
 
-            pendingInviteCode =
-                null;
+            pendingInviteCode = null;
 
-            await joinPairByCode(
-                code
-            );
+            await joinPairByCode(code);
 
         }
 
@@ -559,17 +545,17 @@ async function saveUserProfile() {
             error
         );
 
-        message.textContent =
-            "Не удалось обновить профиль в паре.";
+        if (message) {
+
+            message.textContent =
+                "Не удалось обновить профиль в паре.";
+
+        }
 
     }
 
 }
 
-
-// ======================================================
-// ПРОФИЛЬ — КНОПКИ
-// ======================================================
 
 nameSubmit?.addEventListener(
     "click",
@@ -581,10 +567,7 @@ nameInput?.addEventListener(
     "keydown",
     event => {
 
-        if (
-            event.key ===
-            "Enter"
-        ) {
+        if (event.key === "Enter") {
 
             saveUserProfile();
 
@@ -600,22 +583,21 @@ $("change-profile")?.addEventListener(
 
         closeMenu();
 
-        openProfileModal(
-            true
-        );
+        openProfileModal(true);
 
     }
 );
 
 
 // ======================================================
-// ГЕНЕРАЦИЯ КОДА
+// PAIR CODE
 // ======================================================
 
 function generatePairCode() {
 
     const chars =
         "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
 
     return Array.from(
         { length: 6 },
@@ -632,119 +614,157 @@ function generatePairCode() {
 
 
 // ======================================================
-// СЛУШАТЬ ПАРУ
+// CALENDAR DATE KEY
 // ======================================================
 
-function listenToPair(
-    pairId
+function getCalendarDateKey(
+    year,
+    month,
+    day
 ) {
 
-    if (stopListening) {
-        stopListening();
-    }
-
-
-    stopListening =
-        onSnapshot(
-            doc(
-                db,
-                "pairs",
-                pairId
-            ),
-
-            snapshot => {
-
-                if (!snapshot.exists()) {
-
-                    partnerStatus.textContent =
-                        "Пара не найдена. Создай новую или подключись снова.";
-
-                    return;
-
-                }
-
-
-                const members =
-                    snapshot.data().members ||
-                    {};
-
-                const ids =
-                    Object.keys(
-                        members
-                    );
-
-
-                const partnerId =
-                    ids.find(
-                        id =>
-                            id !==
-                            currentUser?.uid
-                    );
-
-
-                if (!partnerId) {
-
-                    partnerStatus.textContent =
-                        "Ожидаем партнёра 💌";
-
-                    return;
-
-                }
-
-
-                const partner =
-                    members[partnerId];
-
-
-                const partnerName =
-                    partner.name ||
-                    "Партнёр";
-
-
-                if (partner.mood) {
-
-                    partnerStatus.textContent =
-                        `${partner.mood.emoji || "💜"} ${partnerName}: ${getMoodText(
-                            partner.mood.text,
-                            partner.gender
-                        )}`;
-
-                } else {
-
-                    partnerStatus.textContent =
-                        `${partnerName} ещё не выбрал настроение 💭`;
-
-                }
-
-            },
-
-            error => {
-
-                console.error(
-                    "Ошибка обновления пары:",
-                    error
-                );
-
-                partnerStatus.textContent =
-                    "Не удалось обновить данные пары.";
-
-            }
-        );
+    return `${year}-${String(
+        month + 1
+    ).padStart(2, "0")}-${String(
+        day
+    ).padStart(2, "0")}`;
 
 }
 
 
 // ======================================================
-// ВОССТАНОВЛЕНИЕ ПАРЫ
+// LISTEN TO PAIR
 // ======================================================
 
-async function restorePair(
-    pairId
-) {
+function listenToPair(pairId) {
+
+    if (stopListening) {
+
+        stopListening();
+
+    }
+
+
+    stopListening = onSnapshot(
+
+        doc(
+            db,
+            "pairs",
+            pairId
+        ),
+
+        snapshot => {
+
+            if (!snapshot.exists()) {
+
+                partnerStatus.textContent =
+                    "Пара не найдена. Создай новую или подключись снова.";
+
+                calendarEvents = {};
+
+                renderCalendar();
+
+                return;
+            }
+
+
+            const pairData =
+                snapshot.data();
+
+
+            // ==========================================
+            // ОБЩИЙ КАЛЕНДАРЬ
+            // ==========================================
+
+            calendarEvents =
+                pairData.events || {};
+
+
+            // Сразу перерисовываем календарь.
+            // Если партнёр добавил дату,
+            // она появится здесь автоматически.
+
+            renderCalendar();
+
+
+            // ==========================================
+            // ПАРТНЁР
+            // ==========================================
+
+            const members =
+                pairData.members || {};
+
+            const ids =
+                Object.keys(members);
+
+
+            const partnerId =
+                ids.find(
+                    id =>
+                        id !== currentUser?.uid
+                );
+
+
+            if (!partnerId) {
+
+                partnerStatus.textContent =
+                    "Ожидаем партнёра 💌";
+
+                return;
+            }
+
+
+            const partner =
+                members[partnerId];
+
+
+            const partnerName =
+                partner.name || "Партнёр";
+
+
+            if (partner.mood) {
+
+                partnerStatus.textContent =
+                    `${partner.mood.emoji || "💜"} ${partnerName}: ${getMoodText(
+                        partner.mood.text,
+                        partner.gender
+                    )}`;
+
+            } else {
+
+                partnerStatus.textContent =
+                    `${partnerName} ещё не выбрал настроение 💭`;
+
+            }
+
+        },
+
+        error => {
+
+            console.error(
+                "Ошибка обновления пары:",
+                error
+            );
+
+            partnerStatus.textContent =
+                "Не удалось обновить данные пары.";
+
+        }
+
+    );
+
+}
+
+
+// ======================================================
+// RESTORE PAIR
+// ======================================================
+
+async function restorePair(pairId) {
 
     try {
 
-        const snapshot =
+        const snap =
             await getDoc(
                 doc(
                     db,
@@ -754,43 +774,20 @@ async function restorePair(
             );
 
 
-        if (!snapshot.exists()) {
-
-            localStorage.removeItem(
-                "ourMoodPairId"
-            );
-
-            currentPairId =
-                null;
-
-            sharePairButton.style.display =
-                "none";
-
-            partnerStatus.textContent =
-                "Пока вы не подключены";
-
-            return;
-
-        }
-
-
-        const members =
-            snapshot.data().members ||
-            {};
-
-
         if (
-            !members[
-                currentUser.uid
-            ]
+            !snap.exists() ||
+            !snap.data().members?.[currentUser.uid]
         ) {
 
             localStorage.removeItem(
                 "ourMoodPairId"
             );
 
-            currentPairId =
-                null;
+            currentPairId = null;
+
+            calendarEvents = {};
+
+            renderCalendar();
 
             sharePairButton.style.display =
                 "none";
@@ -806,12 +803,12 @@ async function restorePair(
         currentPairId =
             pairId;
 
+
         sharePairButton.style.display =
             "block";
 
-        listenToPair(
-            pairId
-        );
+
+        listenToPair(pairId);
 
     } catch (error) {
 
@@ -829,7 +826,7 @@ async function restorePair(
 
 
 // ======================================================
-// СОЗДАНИЕ ПАРЫ
+// CREATE PAIR
 // ======================================================
 
 $("create-pair")?.addEventListener(
@@ -875,44 +872,41 @@ $("create-pair")?.addEventListener(
 
         try {
 
-            let pairCode =
+            let code =
                 generatePairCode();
 
-            let pairRef =
+            let ref =
                 doc(
                     db,
                     "pairs",
-                    pairCode
+                    code
                 );
 
 
             while (
-                (
-                    await getDoc(
-                        pairRef
-                    )
-                ).exists()
+                (await getDoc(ref)).exists()
             ) {
 
-                pairCode =
+                code =
                     generatePairCode();
 
-                pairRef =
+                ref =
                     doc(
                         db,
                         "pairs",
-                        pairCode
+                        code
                     );
 
             }
 
 
             await setDoc(
-                pairRef,
+
+                ref,
+
                 {
 
-                    code:
-                        pairCode,
+                    code,
 
                     members: {
 
@@ -937,20 +931,27 @@ $("create-pair")?.addEventListener(
 
                     },
 
+                    // ВАЖНО:
+                    // теперь события календаря
+                    // находятся внутри пары.
+
+                    events: {},
+
                     createdAt:
                         Date.now()
 
                 }
+
             );
 
 
             currentPairId =
-                pairCode;
+                code;
 
 
             localStorage.setItem(
                 "ourMoodPairId",
-                pairCode
+                code
             );
 
 
@@ -962,13 +963,16 @@ $("create-pair")?.addEventListener(
                 "Ожидаем партнёра 💌";
 
 
-            listenToPair(
-                pairCode
-            );
+            calendarEvents = {};
+
+            renderCalendar();
+
+
+            listenToPair(code);
 
 
             alert(
-                `Ваша пара создана! 💜\n\nКод для партнёра:\n${pairCode}`
+                `Ваша пара создана! 💜\n\nКод для партнёра:\n${code}`
             );
 
 
@@ -990,12 +994,10 @@ $("create-pair")?.addEventListener(
 
 
 // ======================================================
-// ПОДКЛЮЧЕНИЕ К ПАРЕ
+// JOIN PAIR
 // ======================================================
 
-async function joinPairByCode(
-    rawCode
-) {
+async function joinPairByCode(rawCode) {
 
     if (!currentUser) {
 
@@ -1022,34 +1024,32 @@ async function joinPairByCode(
     }
 
 
-    const pairCode =
+    const code =
         String(rawCode)
             .trim()
             .toUpperCase();
 
 
-    if (!pairCode) {
+    if (!code) {
         return;
     }
 
 
     try {
 
-        const pairRef =
+        const ref =
             doc(
                 db,
                 "pairs",
-                pairCode
+                code
             );
 
 
-        const snapshot =
-            await getDoc(
-                pairRef
-            );
+        const snap =
+            await getDoc(ref);
 
 
-        if (!snapshot.exists()) {
+        if (!snap.exists()) {
 
             alert(
                 "Такой пары не существует 😔"
@@ -1061,37 +1061,33 @@ async function joinPairByCode(
 
 
         const members =
-            snapshot.data().members ||
-            {};
+            snap.data().members || {};
+
 
         const ids =
-            Object.keys(
-                members
-            );
+            Object.keys(members);
 
 
-        if (
-            members[
-                currentUser.uid
-            ]
-        ) {
+        if (members[currentUser.uid]) {
 
             currentPairId =
-                pairCode;
+                code;
+
 
             localStorage.setItem(
                 "ourMoodPairId",
-                pairCode
+                code
             );
 
+
             await saveProfileToPair();
+
 
             sharePairButton.style.display =
                 "block";
 
-            listenToPair(
-                pairCode
-            );
+
+            listenToPair(code);
 
             return;
 
@@ -1110,7 +1106,9 @@ async function joinPairByCode(
 
 
         await updateDoc(
-            pairRef,
+
+            ref,
+
             {
 
                 [`members.${currentUser.uid}`]:
@@ -1134,16 +1132,17 @@ async function joinPairByCode(
                 }
 
             }
+
         );
 
 
         currentPairId =
-            pairCode;
+            code;
 
 
         localStorage.setItem(
             "ourMoodPairId",
-            pairCode
+            code
         );
 
 
@@ -1151,9 +1150,7 @@ async function joinPairByCode(
             "block";
 
 
-        listenToPair(
-            pairCode
-        );
+        listenToPair(code);
 
 
         alert(
@@ -1177,15 +1174,12 @@ async function joinPairByCode(
 }
 
 
-// ======================================================
-// КНОПКА ПОДКЛЮЧЕНИЯ
-// ======================================================
-
 $("join-pair")?.addEventListener(
     "click",
     async () => {
 
         closeMenu();
+
 
         const code =
             prompt(
@@ -1195,9 +1189,7 @@ $("join-pair")?.addEventListener(
 
         if (code) {
 
-            await joinPairByCode(
-                code
-            );
+            await joinPairByCode(code);
 
         }
 
@@ -1206,7 +1198,7 @@ $("join-pair")?.addEventListener(
 
 
 // ======================================================
-// ПОКИНУТЬ ПАРУ
+// LEAVE PAIR
 // ======================================================
 
 $("leave-pair")?.addEventListener(
@@ -1244,26 +1236,31 @@ $("leave-pair")?.addEventListener(
         try {
 
             await updateDoc(
+
                 doc(
                     db,
                     "pairs",
                     currentPairId
                 ),
+
                 {
 
                     [`members.${currentUser.uid}`]:
                         deleteField()
 
                 }
+
             );
 
 
             if (stopListening) {
+
                 stopListening();
+
             }
 
-            stopListening =
-                null;
+
+            stopListening = null;
 
 
             localStorage.removeItem(
@@ -1271,8 +1268,12 @@ $("leave-pair")?.addEventListener(
             );
 
 
-            currentPairId =
-                null;
+            currentPairId = null;
+
+
+            calendarEvents = {};
+
+            renderCalendar();
 
 
             sharePairButton.style.display =
@@ -1294,6 +1295,7 @@ $("leave-pair")?.addEventListener(
                 error
             );
 
+
             alert(
                 "Не удалось покинуть пару 😔"
             );
@@ -1305,7 +1307,7 @@ $("leave-pair")?.addEventListener(
 
 
 // ======================================================
-// НАСТРОЕНИЕ
+// MOOD SELECTION
 // ======================================================
 
 moodButtons.forEach(
@@ -1316,13 +1318,10 @@ moodButtons.forEach(
             () => {
 
                 moodButtons.forEach(
-                    item => {
-
+                    item =>
                         item.classList.remove(
                             "selected"
-                        );
-
-                    }
+                        )
                 );
 
 
@@ -1335,9 +1334,7 @@ moodButtons.forEach(
 
                     emoji:
                         button
-                            .querySelector(
-                                "span"
-                            )
+                            .querySelector("span")
                             .textContent,
 
                     text:
@@ -1346,8 +1343,7 @@ moodButtons.forEach(
                 };
 
 
-                message.textContent =
-                    "";
+                message.textContent = "";
 
             }
         );
@@ -1357,7 +1353,7 @@ moodButtons.forEach(
 
 
 // ======================================================
-// СОХРАНЕНИЕ НАСТРОЕНИЯ
+// SAVE MOOD
 // ======================================================
 
 $("save-mood")?.addEventListener(
@@ -1396,18 +1392,14 @@ $("save-mood")?.addEventListener(
 
         try {
 
-            console.log(
-                "🟢 НАЖАТИЕ СОХРАНИТЬ — начинаем сохранение",
-                selectedMood
-            );
-
-
             await updateDoc(
+
                 doc(
                     db,
                     "pairs",
                     currentPairId
                 ),
+
                 {
 
                     [`members.${currentUser.uid}.mood`]:
@@ -1417,17 +1409,10 @@ $("save-mood")?.addEventListener(
                         Date.now()
 
                 }
+
             );
 
 
-            console.log(
-                "🟢 НАСТРОЕНИЕ СОХРАНЕНО"
-            );
-
-
-            // Уведомления пока оставляем
-            // в коде, но если backend не работает,
-            // само сохранение настроения всё равно работает.
             await notifyPartnerAboutMood(
                 currentPairId,
                 selectedMood
@@ -1456,6 +1441,7 @@ $("save-mood")?.addEventListener(
                 error
             );
 
+
             message.textContent =
                 "Не удалось сохранить настроение 😔";
 
@@ -1466,7 +1452,7 @@ $("save-mood")?.addEventListener(
 
 
 // ======================================================
-// ПРИГЛАШЕНИЕ
+// INVITE
 // ======================================================
 
 sharePairButton?.addEventListener(
@@ -1513,6 +1499,7 @@ sharePairButton?.addEventListener(
                     inviteLink
                 );
 
+
                 alert(
                     "Ссылка-приглашение скопирована 💌"
                 );
@@ -1533,7 +1520,7 @@ sharePairButton?.addEventListener(
 
 
 // ======================================================
-// ВОССТАНОВЛЕНИЕ НАСТРОЕНИЯ
+// RESTORE MOOD
 // ======================================================
 
 try {
@@ -1550,8 +1537,7 @@ try {
 
         const normalized =
             String(
-                savedMood.text ||
-                ""
+                savedMood.text || ""
             ).toLowerCase();
 
 
@@ -1565,28 +1551,21 @@ try {
 
 
                     return (
-
-                        normalized === key
-
-                        ||
+                        normalized === key ||
 
                         (
                             key === "счастлив" &&
                             normalized.includes(
                                 "счастлив"
                             )
-                        )
-
-                        ||
+                        ) ||
 
                         (
                             key === "влюблён" &&
                             normalized.includes(
                                 "влюбл"
                             )
-                        )
-
-                        ||
+                        ) ||
 
                         (
                             key === "устал" &&
@@ -1594,7 +1573,6 @@ try {
                                 "устал"
                             )
                         )
-
                     );
 
                 }
@@ -1612,9 +1590,7 @@ try {
 
                 emoji:
                     button
-                        .querySelector(
-                            "span"
-                        )
+                        .querySelector("span")
                         .textContent,
 
                 text:
@@ -1637,7 +1613,7 @@ try {
 
 
 // ======================================================
-// КАЛЕНДАРЬ
+// CALENDAR DOM
 // ======================================================
 
 const eventModal =
@@ -1663,7 +1639,6 @@ const customEventInput =
 const saveCustomEvent =
     $("save-custom-event");
 
-
 const calendarMonth =
     $("calendar-month");
 
@@ -1677,14 +1652,8 @@ const calendarDaysContainer =
     $("calendar-days");
 
 
-let selectedCalendarDate =
-    null;
-
-let calendarDate =
-    new Date();
-
-
 const calendarMonthNames = [
+
     "Январь",
     "Февраль",
     "Март",
@@ -1697,6 +1666,7 @@ const calendarMonthNames = [
     "Октябрь",
     "Ноябрь",
     "Декабрь"
+
 ];
 
 
@@ -1715,78 +1685,10 @@ const calendarEventNames = {
 
 
 // ======================================================
-// ПОЛУЧИТЬ СОБЫТИЯ
+// OPEN EVENT MODAL
 // ======================================================
 
-function getCalendarEvents() {
-
-    try {
-
-        return JSON.parse(
-            localStorage.getItem(
-                "ourMoodCalendarEvents"
-            )
-        ) || {};
-
-    } catch {
-
-        return {};
-
-    }
-
-}
-
-
-// ======================================================
-// СОХРАНИТЬ СОБЫТИЯ
-// ======================================================
-
-function saveCalendarEvents(
-    events
-) {
-
-    localStorage.setItem(
-        "ourMoodCalendarEvents",
-        JSON.stringify(
-            events
-        )
-    );
-
-}
-
-
-// ======================================================
-// КЛЮЧ ДАТЫ
-// ======================================================
-
-function getCalendarDateKey(
-    year,
-    month,
-    day
-) {
-
-    return `${year}-${String(
-        month + 1
-    ).padStart(
-        2,
-        "0"
-    )}-${String(
-        day
-    ).padStart(
-        2,
-        "0"
-    )}`;
-
-}
-
-
-// ======================================================
-// ОТКРЫТЬ ОКНО СОБЫТИЯ
-// ======================================================
-
-function openEventModal(
-    date
-) {
+function openEventModal(date) {
 
     if (!eventModal) {
         return;
@@ -1799,37 +1701,61 @@ function openEventModal(
 
     const dateObject =
         new Date(
-            date +
-            "T12:00:00"
-        );
-
-
-    const formattedDate =
-        dateObject.toLocaleDateString(
-            "ru-RU",
-            {
-                day: "numeric",
-                month: "long",
-                year: "numeric"
-            }
+            `${date}T12:00:00`
         );
 
 
     if (eventModalDate) {
 
         eventModalDate.textContent =
-            formattedDate;
+            dateObject.toLocaleDateString(
+                "ru-RU",
+                {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric"
+                }
+            );
 
     }
 
 
-    customEventBlock?.classList.remove(
-        "open"
-    );
+    if (customEventBlock) {
+
+        customEventBlock.classList.remove(
+            "open"
+        );
+
+    }
 
 
     if (customEventInput) {
+
         customEventInput.value = "";
+
+    }
+
+
+    const title =
+        $("event-modal-title");
+
+
+    if (title) {
+
+        if (
+            calendarEvents[date]
+        ) {
+
+            title.textContent =
+                `Событие: ${calendarEvents[date].text}`;
+
+        } else {
+
+            title.textContent =
+                "Выбери событие";
+
+        }
+
     }
 
 
@@ -1841,7 +1767,7 @@ function openEventModal(
 
 
 // ======================================================
-// ЗАКРЫТЬ ОКНО СОБЫТИЯ
+// CLOSE EVENT MODAL
 // ======================================================
 
 function closeEventModal() {
@@ -1861,7 +1787,21 @@ function closeEventModal() {
 
 
     if (customEventInput) {
+
         customEventInput.value = "";
+
+    }
+
+
+    const title =
+        $("event-modal-title");
+
+
+    if (title) {
+
+        title.textContent =
+            "Выбери событие";
+
     }
 
 }
@@ -1878,8 +1818,7 @@ eventModal?.addEventListener(
     event => {
 
         if (
-            event.target ===
-            eventModal
+            event.target === eventModal
         ) {
 
             closeEventModal();
@@ -1891,61 +1830,139 @@ eventModal?.addEventListener(
 
 
 // ======================================================
-// ТОЧКИ СОБЫТИЙ
+// SAVE CALENDAR EVENT TO FIRESTORE
 // ======================================================
 
-function updateCalendarEventDots() {
+async function saveCalendarEvent(
+    date,
+    eventData
+) {
 
-    if (!calendarDaysContainer) {
+    const calendarMessage =
+        $("calendar-message");
+
+
+    if (!currentUser) {
+
+        if (calendarMessage) {
+
+            calendarMessage.textContent =
+                "Подключаемся к серверу...";
+
+        }
+
         return;
+
     }
 
 
-    const events =
-        getCalendarEvents();
+    if (!currentPairId) {
+
+        if (calendarMessage) {
+
+            calendarMessage.textContent =
+                "Сначала создай или подключи пару 💌";
+
+        }
+
+        return;
+
+    }
 
 
-    const days =
-        calendarDaysContainer.querySelectorAll(
-            ".calendar-day"
-        );
+    try {
+
+        const value = {
+
+            type:
+                String(
+                    eventData.type ||
+                    "custom"
+                ),
+
+            text:
+                String(
+                    eventData.text ||
+                    "✏️ Отметка"
+                ),
+
+            author:
+                currentUserName ||
+                "Участник",
+
+            authorId:
+                currentUser.uid,
+
+            createdAt:
+                Date.now()
+
+        };
 
 
-    days.forEach(
-        day => {
+        // ==================================================
+        // ВАЖНО:
+        // сохраняем событие прямо в документе пары.
+        //
+        // events:
+        // {
+        //     "2026-10-12": {...},
+        //     "2026-10-20": {...}
+        // }
+        //
+        // Поэтому партнёр получит его через onSnapshot.
+        // ==================================================
 
-            const date =
-                day.dataset.date;
+        await updateDoc(
 
+            doc(
+                db,
+                "pairs",
+                currentPairId
+            ),
 
-            day.classList.remove(
-                "has-event"
-            );
+            {
 
-
-            if (
-                date &&
-                events[date]
-            ) {
-
-                day.classList.add(
-                    "has-event"
-                );
-
-
-                day.title =
-                    events[date].text;
+                [`events.${date}`]:
+                    value
 
             }
 
+        );
+
+
+        if (calendarMessage) {
+
+            calendarMessage.textContent =
+                "Событие сохранено для вас обоих 💜";
+
         }
-    );
+
+
+        closeEventModal();
+
+
+    } catch (error) {
+
+        console.error(
+            "Ошибка сохранения события календаря:",
+            error
+        );
+
+
+        if (calendarMessage) {
+
+            calendarMessage.textContent =
+                "Не удалось сохранить событие 😔";
+
+        }
+
+    }
 
 }
 
 
 // ======================================================
-// ВЫБОР СОБЫТИЯ
+// EVENT BUTTONS
 // ======================================================
 
 eventOptions.forEach(
@@ -1953,17 +1970,13 @@ eventOptions.forEach(
 
         button.addEventListener(
             "click",
-            function () {
+            async function () {
 
-                const eventType =
+                const type =
                     this.dataset.event;
 
 
-                // Своя отметка
-                if (
-                    eventType ===
-                    "custom"
-                ) {
+                if (type === "custom") {
 
                     customEventBlock?.classList.add(
                         "open"
@@ -1971,9 +1984,8 @@ eventOptions.forEach(
 
 
                     setTimeout(
-                        () => {
-                            customEventInput?.focus();
-                        },
+                        () =>
+                            customEventInput?.focus(),
                         100
                     );
 
@@ -1988,34 +2000,21 @@ eventOptions.forEach(
                 }
 
 
-                const events =
-                    getCalendarEvents();
+                await saveCalendarEvent(
 
+                    selectedCalendarDate,
 
-                events[
-                    selectedCalendarDate
-                ] = {
+                    {
 
-                    type:
-                        eventType,
+                        type,
 
-                    text:
-                        calendarEventNames[
-                            eventType
-                        ]
+                        text:
+                            calendarEventNames[type] ||
+                            "📅 Событие"
 
-                };
+                    }
 
-
-                saveCalendarEvents(
-                    events
                 );
-
-
-                closeEventModal();
-
-
-                renderCalendar();
 
             }
         );
@@ -2025,20 +2024,20 @@ eventOptions.forEach(
 
 
 // ======================================================
-// СВОЯ ОТМЕТКА
+// CUSTOM EVENT
 // ======================================================
 
 saveCustomEvent?.addEventListener(
     "click",
-    () => {
+    async () => {
 
         const text =
-            customEventInput.value.trim();
+            customEventInput?.value.trim();
 
 
         if (!text) {
 
-            customEventInput.focus();
+            customEventInput?.focus();
 
             return;
 
@@ -2050,49 +2049,30 @@ saveCustomEvent?.addEventListener(
         }
 
 
-        const events =
-            getCalendarEvents();
+        await saveCalendarEvent(
 
+            selectedCalendarDate,
 
-        events[
-            selectedCalendarDate
-        ] = {
+            {
 
-            type:
-                "custom",
+                type: "custom",
 
-            text:
-                "✏️ " + text
+                text:
+                    `✏️ ${text}`
 
-        };
+            }
 
-
-        saveCalendarEvents(
-            events
         );
-
-
-        closeEventModal();
-
-
-        renderCalendar();
 
     }
 );
 
 
-// ======================================================
-// ENTER В СВОЕЙ ОТМЕТКЕ
-// ======================================================
-
 customEventInput?.addEventListener(
     "keydown",
     event => {
 
-        if (
-            event.key ===
-            "Enter"
-        ) {
+        if (event.key === "Enter") {
 
             saveCustomEvent?.click();
 
@@ -2103,54 +2083,47 @@ customEventInput?.addEventListener(
 
 
 // ======================================================
-// НАЖАТИЕ НА ДЕНЬ
+// CALENDAR CLICK
 // ======================================================
 
 calendarDaysContainer?.addEventListener(
     "click",
     event => {
 
-        const dayButton =
+        const button =
             event.target.closest(
                 ".calendar-day"
             );
 
 
-        if (!dayButton) {
+        if (!button) {
             return;
         }
 
 
         if (
-            dayButton.classList.contains(
+            button.classList.contains(
                 "empty"
             )
         ) {
-
-            return;
-
-        }
-
-
-        const date =
-            dayButton.dataset.date;
-
-
-        if (!date) {
             return;
         }
 
 
-        openEventModal(
-            date
-        );
+        if (button.dataset.date) {
+
+            openEventModal(
+                button.dataset.date
+            );
+
+        }
 
     }
 );
 
 
 // ======================================================
-// ОТРИСОВКА КАЛЕНДАРЯ
+// RENDER CALENDAR
 // ======================================================
 
 function renderCalendar() {
@@ -2159,14 +2132,13 @@ function renderCalendar() {
         !calendarDaysContainer ||
         !calendarMonth
     ) {
-
         return;
-
     }
 
 
     const year =
         calendarDate.getFullYear();
+
 
     const month =
         calendarDate.getMonth();
@@ -2180,9 +2152,6 @@ function renderCalendar() {
         "";
 
 
-    // День недели первого числа.
-    // JS: воскресенье = 0.
-    // Нам нужен календарь с понедельника.
     let firstDay =
         new Date(
             year,
@@ -2192,7 +2161,9 @@ function renderCalendar() {
 
 
     if (firstDay === 0) {
+
         firstDay = 7;
+
     }
 
 
@@ -2216,56 +2187,52 @@ function renderCalendar() {
         );
 
 
-    const events =
-        getCalendarEvents();
-
-
-    // Пустые клетки
+    // Пустые клетки перед первым днём
     for (
         let i = 1;
         i < firstDay;
         i++
     ) {
 
-        const emptyDay =
+        const empty =
             document.createElement(
                 "div"
             );
 
 
-        emptyDay.className =
+        empty.className =
             "calendar-day empty";
 
 
         calendarDaysContainer.appendChild(
-            emptyDay
+            empty
         );
 
     }
 
 
-    // Дни
+    // Дни месяца
     for (
         let day = 1;
         day <= daysInMonth;
         day++
     ) {
 
-        const dayButton =
+        const button =
             document.createElement(
                 "button"
             );
 
 
-        dayButton.type =
+        button.type =
             "button";
 
 
-        dayButton.className =
+        button.className =
             "calendar-day";
 
 
-        dayButton.textContent =
+        button.textContent =
             day;
 
 
@@ -2277,41 +2244,55 @@ function renderCalendar() {
             );
 
 
-        dayButton.dataset.date =
+        button.dataset.date =
             dateKey;
 
 
         // Сегодня
         if (
-            dateKey ===
-            todayKey
+            dateKey === todayKey
         ) {
 
-            dayButton.classList.add(
+            button.classList.add(
                 "today"
             );
 
         }
 
 
-        // Событие
-        if (
-            events[dateKey]
-        ) {
+        // ==============================================
+        // СОБЫТИЕ
+        // ==============================================
 
-            dayButton.classList.add(
+        const eventData =
+            calendarEvents[dateKey];
+
+
+        if (eventData) {
+
+            button.classList.add(
                 "has-event"
             );
 
 
-            dayButton.title =
-                events[dateKey].text;
+            button.title =
+                eventData.text ||
+                "Событие";
+
+
+            button.setAttribute(
+                "aria-label",
+                `${day}, ${
+                    eventData.text ||
+                    "есть событие"
+                }`
+            );
 
         }
 
 
         calendarDaysContainer.appendChild(
-            dayButton
+            button
         );
 
     }
@@ -2320,36 +2301,34 @@ function renderCalendar() {
 
 
 // ======================================================
-// ПРЕДЫДУЩИЙ МЕСЯЦ
+// CALENDAR MONTH NAVIGATION
 // ======================================================
 
 prevMonthButton?.addEventListener(
     "click",
     () => {
 
+        calendarDate.setDate(1);
+
         calendarDate.setMonth(
             calendarDate.getMonth() - 1
         );
-
 
         renderCalendar();
 
     }
 );
 
-
-// ======================================================
-// СЛЕДУЮЩИЙ МЕСЯЦ
-// ======================================================
 
 nextMonthButton?.addEventListener(
     "click",
     () => {
 
+        calendarDate.setDate(1);
+
         calendarDate.setMonth(
             calendarDate.getMonth() + 1
         );
-
 
         renderCalendar();
 
@@ -2358,14 +2337,14 @@ nextMonthButton?.addEventListener(
 
 
 // ======================================================
-// ПЕРВЫЙ ЗАПУСК КАЛЕНДАРЯ
+// INITIAL CALENDAR
 // ======================================================
 
 renderCalendar();
 
 
 // ======================================================
-// НАЧАЛЬНАЯ НАСТРОЙКА
+// PROFILE INITIAL STATE
 // ======================================================
 
 updateMoodButtons();
@@ -2386,24 +2365,26 @@ if (
 
 
 // ======================================================
-// FIREBASE АВТОРИЗАЦИЯ
+// FIREBASE AUTH
 // ======================================================
 
 signInAnonymously(auth)
-    .catch(
-        error => {
+    .catch(error => {
 
-            console.error(
-                "Ошибка авторизации:",
-                error
-            );
+        console.error(
+            "Ошибка авторизации:",
+            error
+        );
 
+
+        if (message) {
 
             message.textContent =
                 "Не удалось подключиться к Firebase 😔";
 
         }
-    );
+
+    });
 
 
 onAuthStateChanged(
@@ -2419,18 +2400,13 @@ onAuthStateChanged(
             user;
 
 
-        // Восстанавливаем пару
         if (currentPairId) {
 
             await restorePair(
                 currentPairId
             );
 
-        }
-
-
-        // Пришёл по приглашению
-        else if (
+        } else if (
             pendingInviteCode &&
             currentUserName &&
             currentUserGender
