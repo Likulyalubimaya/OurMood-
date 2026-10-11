@@ -636,24 +636,34 @@ function getCalendarDateKey(
 // LISTEN TO PAIR
 // ======================================================
 
+// ======================================================
+// LISTEN TO PAIR
+// ======================================================
+
 function listenToPair(pairId) {
 
     if (stopListening) {
-
         stopListening();
-
+        stopListening = null;
     }
 
+    console.log("👂 Начинаем слушать пару:", pairId);
+
+    const pairRef = doc(
+        db,
+        "pairs",
+        pairId
+    );
 
     stopListening = onSnapshot(
-
-        doc(
-            db,
-            "pairs",
-            pairId
-        ),
+        pairRef,
 
         snapshot => {
+
+            console.log(
+                "🔥 Получено обновление пары:",
+                snapshot.data()
+            );
 
             if (!snapshot.exists()) {
 
@@ -667,22 +677,23 @@ function listenToPair(pairId) {
                 return;
             }
 
-
-            const pairData =
-                snapshot.data();
-
+            const pairData = snapshot.data();
 
             // ==========================================
-            // ОБЩИЙ КАЛЕНДАРЬ
+            // КАЛЕНДАРЬ
             // ==========================================
 
-            calendarEvents =
+            const firebaseEvents =
                 pairData.events || {};
 
+            console.log(
+                "📅 События из Firebase:",
+                firebaseEvents
+            );
 
-            // Сразу перерисовываем календарь.
-            // Если партнёр добавил дату,
-            // она появится здесь автоматически.
+            calendarEvents = {
+                ...firebaseEvents
+            };
 
             renderCalendar();
 
@@ -697,13 +708,11 @@ function listenToPair(pairId) {
             const ids =
                 Object.keys(members);
 
-
             const partnerId =
                 ids.find(
                     id =>
                         id !== currentUser?.uid
                 );
-
 
             if (!partnerId) {
 
@@ -713,14 +722,11 @@ function listenToPair(pairId) {
                 return;
             }
 
-
             const partner =
                 members[partnerId];
 
-
             const partnerName =
                 partner.name || "Партнёр";
-
 
             if (partner.mood) {
 
@@ -742,7 +748,7 @@ function listenToPair(pairId) {
         error => {
 
             console.error(
-                "Ошибка обновления пары:",
+                "❌ Ошибка слушателя пары:",
                 error
             );
 
@@ -750,9 +756,7 @@ function listenToPair(pairId) {
                 "Не удалось обновить данные пары.";
 
         }
-
     );
-
 }
 
 
@@ -1914,20 +1918,23 @@ async function saveCalendarEvent(
 
         await updateDoc(
 
-            doc(
-                db,
-                "pairs",
-                currentPairId
-            ),
+    doc(
+        db,
+        "pairs",
+        currentPairId
+    ),
 
-            {
+    {
+        [`events.${date}`]: value
+    }
 
-                [`events.${date}`]:
-                    value
+);
 
-            }
-
-        );
+console.log(
+    "✅ Событие записано в Firebase:",
+    date,
+    value
+);
 
 
         if (calendarMessage) {
