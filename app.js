@@ -414,44 +414,60 @@ function getMoodText(mood, gender) {
 // COUPLE AVATAR
 // ======================================================
 
+// ======================================================
+// COUPLE AVATAR
+// ======================================================
+
 function updateCoupleAvatar(members) {
 
     const avatar = $("couple-avatar");
 
     if (!avatar) {
+        console.warn("⚠️ Элемент couple-avatar не найден");
         return;
     }
 
     const users = Object.values(members || {});
 
+    // Пока партнёра нет
     if (users.length < 2) {
         avatar.textContent = "💜";
         return;
     }
 
-    const firstGender = users[0].gender;
-    const secondGender = users[1].gender;
+    const maleCount =
+        users.filter(user => user.gender === "male").length;
 
-    // Два парня
-    if (
-        firstGender === "male" &&
-        secondGender === "male"
-    ) {
+    const femaleCount =
+        users.filter(user => user.gender === "female").length;
+
+
+    // 👨 + 👨
+    if (maleCount === 2) {
         avatar.textContent = "👨‍❤️‍👨";
         return;
     }
 
-    // Две девушки
-    if (
-        firstGender === "female" &&
-        secondGender === "female"
-    ) {
+
+    // 👩 + 👩
+    if (femaleCount === 2) {
         avatar.textContent = "👩‍❤️‍👩";
         return;
     }
 
-    // Парень + девушка
-    avatar.textContent = "👩‍❤️‍👨";
+
+    // 👨 + 👩
+    if (
+        maleCount === 1 &&
+        femaleCount === 1
+    ) {
+        avatar.textContent = "👩‍❤️‍👨";
+        return;
+    }
+
+
+    // Если данные почему-то неполные
+    avatar.textContent = "💜";
 }
 
 
