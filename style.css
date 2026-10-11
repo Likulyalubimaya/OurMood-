@@ -164,59 +164,170 @@ h1 {
 /* КНОПКА НАСТРОЕНИЯ */
 /* ========================================= */
 
-.mood {
-    border: 1px solid #39304f;
+/* ========================================= */
+/* ОБЪЁМНЫЕ КНОПКИ НАСТРОЕНИЯ */
+/* ========================================= */
 
-    background: var(--card);
+/* ========================================= */
+/* 3D КНОПКИ НАСТРОЕНИЯ */
+/* ========================================= */
+
+.mood {
+    position: relative;
+
+    border: 1px solid rgba(167, 139, 250, 0.25);
+
+    background: linear-gradient(
+        145deg,
+        #3b3153 0%,
+        #2b2340 45%,
+        #201a30 100%
+    );
 
     color: var(--text);
 
-    border-radius: 17px;
+    border-radius: 19px;
 
-    padding: 16px 4px;
+    padding: 17px 4px 16px;
 
     cursor: pointer;
 
+    /* Нижняя объёмная часть */
+    box-shadow:
+        0 8px 0 #15111f,
+        0 13px 20px rgba(0, 0, 0, 0.35),
+
+        /* Внутренний верхний блик */
+        inset 0 2px 2px rgba(255, 255, 255, 0.10),
+
+        /* Внутренняя тень снизу */
+        inset 0 -3px 5px rgba(0, 0, 0, 0.20);
+
+    transform: translateY(0);
+
     transition:
-        transform 0.2s ease,
-        background 0.2s ease,
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        background 0.15s ease,
+        border-color 0.15s ease;
 }
+
+
+/* ========================================= */
+/* БЛИК СВЕРХУ */
+/* ========================================= */
+
+.mood::before {
+    content: "";
+
+    position: absolute;
+
+    top: 1px;
+    left: 10%;
+    right: 10%;
+
+    height: 2px;
+
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, 0.10);
+
+    pointer-events: none;
+}
+
+
+/* ========================================= */
+/* НАВЕДЕНИЕ */
+/* ========================================= */
 
 .mood:hover {
-    background: #302744;
+    background: linear-gradient(
+        145deg,
+        #493c63 0%,
+        #342a4c 50%,
+        #251e37 100%
+    );
 
-    border-color: rgba(167, 139, 250, 0.35);
+    border-color: rgba(240, 171, 252, 0.45);
 
-    transform: translateY(-2px);
+    transform: translateY(-5px);
+
+    box-shadow:
+        0 13px 0 #15111f,
+        0 20px 28px rgba(0, 0, 0, 0.40),
+        inset 0 2px 3px rgba(255, 255, 255, 0.12),
+        inset 0 -3px 6px rgba(0, 0, 0, 0.18);
 }
+
+
+/* ========================================= */
+/* НАЖАТИЕ — КНОПКА ВДАВЛИВАЕТСЯ */
+/* ========================================= */
 
 .mood:active {
-    transform: scale(0.96);
+    transform: translateY(7px);
+
+    box-shadow:
+        0 2px 0 #15111f,
+        0 5px 9px rgba(0, 0, 0, 0.28),
+        inset 0 3px 7px rgba(0, 0, 0, 0.25),
+        inset 0 1px 2px rgba(255, 255, 255, 0.04);
 }
+
+
+/* ========================================= */
+/* ЭМОДЗИ */
+/* ========================================= */
 
 .mood span {
     display: block;
 
-    font-size: 30px;
+    font-size: 31px;
 
     margin-bottom: 9px;
+
+    filter:
+        drop-shadow(0 4px 3px rgba(0, 0, 0, 0.35));
 }
+
+
+/* ========================================= */
+/* ТЕКСТ */
+/* ========================================= */
 
 .mood small {
     font-size: 11px;
+
+    font-weight: 600;
+
+    color: #f1edf8;
+
+    text-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
+
+/* ========================================= */
+/* ВЫБРАННАЯ КНОПКА */
+/* ========================================= */
+
 .mood.selected {
-    background: #39284e;
+    background: linear-gradient(
+        145deg,
+        #624b7b 0%,
+        #4b3560 50%,
+        #39284e 100%
+    );
 
     border-color: var(--pink);
 
-    transform: scale(1.03);
+    transform: translateY(3px) scale(1.02);
 
     box-shadow:
-        0 5px 18px rgba(240, 171, 252, 0.12);
+        0 4px 0 #25182f,
+        0 9px 20px rgba(240, 171, 252, 0.22),
+        inset 0 2px 3px rgba(255, 255, 255, 0.12),
+        inset 0 -3px 6px rgba(0, 0, 0, 0.18);
 }
 
 
