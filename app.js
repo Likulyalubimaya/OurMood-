@@ -1020,10 +1020,34 @@ if (relationshipDateInput) {
             const members =
                 pairData.members || {};
             updateCoupleAvatar(members);
+            updatePairButtons();
 
-            updatePairButtons(
-                Object.keys(members).length
-            );
+            
+function updatePairButtons() {
+    const hasPair = Boolean(currentPairId);
+
+    const createButton = $("create-pair");
+    const inviteButton = $("share-pair");
+    const joinButton = $("join-pair");
+    const leaveButton = $("leave-pair");
+
+    if (createButton) {
+        createButton.hidden = hasPair;
+    }
+
+    if (inviteButton) {
+        inviteButton.hidden = hasPair;
+    }
+
+    if (joinButton) {
+        joinButton.hidden = hasPair;
+    }
+
+    if (leaveButton) {
+        leaveButton.hidden = !hasPair;
+    }
+}
+
 
             const ids =
                 Object.keys(members);
@@ -1662,8 +1686,8 @@ async function joinPairByCode(rawCode) {
         );
 
 
-        currentPairId =
-            code;
+        currentPairId =code;
+        updatePairButtons();
 
 
         localStorage.setItem(
@@ -1795,6 +1819,7 @@ $("leave-pair")?.addEventListener(
 
 
             currentPairId = null;
+            updatePairButtons();
 
 
             calendarEvents = {};
