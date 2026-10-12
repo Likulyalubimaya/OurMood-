@@ -85,6 +85,38 @@ const message = $("message");
 const partnerStatus = $("partner-status");
 const sharePairButton = $("share-pair");
 
+const createPairButton = $("create-pair");
+const joinPairButton = $("join-pair");
+const leavePairButton = $("leave-pair");
+
+function updatePairButtons(memberCount = 0) {
+    const hasPair = Boolean(currentPairId);
+
+    // Создать и подключиться можно только без пары
+    if (createPairButton) {
+        createPairButton.style.display =
+            hasPair ? "none" : "";
+    }
+
+    if (joinPairButton) {
+        joinPairButton.style.display =
+            hasPair ? "none" : "";
+    }
+
+    // Приглашение нужно, пока второй участник не подключился
+    if (sharePairButton) {
+        sharePairButton.style.display =
+            hasPair && memberCount < 2 ? "" : "none";
+    }
+
+    // Выход доступен, пока пользователь состоит в паре
+    if (leavePairButton) {
+        leavePairButton.style.display =
+            hasPair ? "" : "none";
+    }
+}
+
+
 
 // ======================================================
 // STATE
@@ -899,11 +931,11 @@ function startLocationSharing() {
 }
 
 $("toggle-location-sharing")?.addEventListener("click", () => {
-  if (locationWatchId !== null) {
+    if (locationWatchId !== null) {
     void stopLocationSharing();
-  } else {
+    } else {
     startLocationSharing();
-  }
+    }
 });
 
 // ======================================================
@@ -988,6 +1020,10 @@ if (relationshipDateInput) {
             const members =
                 pairData.members || {};
             updateCoupleAvatar(members);
+
+            updatePairButtons(
+                Object.keys(members).length
+            );
 
             const ids =
                 Object.keys(members);
