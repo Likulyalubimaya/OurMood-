@@ -138,6 +138,7 @@ let selectedMood = null;
 let stopListening = null;
 
 let locationWatchId = null;
+let locationIntervalId = null;
 let lastLocationWriteAt = 0;
 let partnerLocationMap = null;
 let partnerLocationMarker = null;
@@ -930,161 +931,145 @@ async function stopLocationSharing({
 
 function startLocationSharing({ automatic = false } = {}) {
     if (!currentUser || !currentPairId) {
-        setMyLocationStatus(
-            "Сначала создай пару или подключись к партнёру."
-        );
-
+        setMyLocationStatus("Сначала создай или присоединись к паре");
         return;
     }
 
-    if (!navigator.geolocation) {
-        setMyLocationStatus(
-            "Этот браузер не поддерживает геолокацию."
-        );
-
+    if (locationWatchId !== null || locationIntervalId !== null) {
         return;
     }
 
-    // Не запускаем несколько наблюдателей одновременно.
-    if (locationWatchId !== null) {
-        return;
-    }
-
-    // При первом включении спрашиваем согласие.
-    // При повторном открытии используем сохранённый выбор.
     if (!automatic) {
         const accepted = confirm(
-            "Разрешить OurMood передавать твою текущую геопозицию партнёру?\n\n" +
-            "Партнёр сможет видеть твоё местоположение на карте. " +
-            "Передачу можно отключить в любой момент."
+            "Разрешить OurMood передавать твою геопозицию партнёру?\n\n" +
+            "Геопозиция нужна для раздела с картой."
         );
 
-        if (!accepted) return;
+        if (!accepted) {
+            setMyLocationStatus("Передача геопозиции отменена");
+            return;
+        }
 
-        localStorage.setItem(
-            LOCATION_SHARING_KEY,
-            "true"
-        );
+        localStorage.setItem(LOCATION_SHARING_KEY, "true");
     }
 
-    locationWatchId = -1;
+    // Используем специальный API Telegram,
+    // если приложение открыто внутри Telegram.
+    if (tg?.LocationManager) {
+        setMyLocationStatus("Запрашиваем геопозицию...");
 
-    const button = $("toggle-location-sharing");
-
-    if (button) {
-        button.textContent = "Отключить геопозицию";
-    }
-
-    setMyLocationStatus(
-        "Определяем местоположение…"
-    );
-
-    const watchId = navigator.geolocation.watchPosition(
-        async position => {
-            if (locationWatchId === null) return;
-
-            locationWatchId = watchId;
-
-            const now = Date.now();
-
-            // Не чаще одной записи в Firebase за 10 секунд.
-            if (
-                locationWriteBusy ||
-                (
-                    lastLocationWriteAt &&
-                    now - lastLocationWriteAt < 10000
-                )
-            ) {
+        tg.LocationManager.init((data) => {
+            if (!tg.LocationManager.isLocationAvailable) {
                 setMyLocationStatus(
-                    "Геопозиция включена 💜"
+                    "Геолокация недоступна в Telegram"
                 );
-
                 return;
             }
 
-            locationWriteBusy = true;
-
-            try {
-                await updateDoc(
-                    doc(db, "pairs", currentPairId),
-                    {
-                        [`locations.${currentUser.uid}`]: {
-                            latitude: position.coords.latitude,
-                            longitude: position.coords.longitude,
-                            updatedAt: now
-                        }
-                    }
-                );
-
-                lastLocationWriteAt = now;
-
+            if (!tg.LocationManager.isAccessGranted) {
                 setMyLocationStatus(
-                    "Геопозиция включена и передаётся партнёру 💜"
-                );
-            } catch (error) {
-                console.error(
-                    "Не удалось передать геопозицию:",
-                    error
+                    "Разреши доступ к геопозиции в Telegram"
                 );
 
-                setMyLocationStatus(
-                    "Не удалось передать координаты. Проверь интернет."
-                );
-            } finally {
-                locationWriteBusy = false;
+                // Повторный запрос нужно делать
+                // нажатием пользователя на кнопку.
+                return;
             }
-        },
 
-        error => {
-            console.warn(
-                "Ошибка геолокации:",
-                error
+            requestTelegramLocation();
+        });
+
+        return;
+    }
+
+    // Резервный способ для браузера и компьютера.
+    if (!navigator.geolocation) {
+        setMyLocationStatus("Геолокация не поддерживается");
+        return;
+    }
+
+    setMyLocationStatus("Запрашиваем геопозицию...");
+
+    locationWatchId = navigator.geolocation.watchPosition(
+        async (position) => {
+            await saveLocation(
+                position.coords.latitude,
+                position.coords.longitude
             );
 
-            if (
-                locationWatchId !== null &&
-                locationWatchId !== -1
-            ) {
-                navigator.geolocation.clearWatch(
-                    locationWatchId
-                );
-            }
+            setMyLocationStatus(
+                "Геопозиция передаётся партнёру 📍"
+            );
+        },
+        (error) => {
+            console.error("Ошибка геолокации:", error);
 
             locationWatchId = null;
 
-            if (button) {
-                button.textContent = "Включить геопозицию";
-            }
-
-            const messages = {
-                1: "Доступ запрещён. Проверь разрешение на геолокацию в Telegram.",
-                2: "Не удалось определить местоположение. Попробуй ещё раз.",
-                3: "Определение местоположения заняло слишком много времени."
-            };
-
-            // Если разрешение запрещено, не запускаем
-            // автоматические попытки при каждом открытии.
-            if (error.code === 1) {
-                localStorage.removeItem(
-                    LOCATION_SHARING_KEY
-                );
-            }
-
             setMyLocationStatus(
-                messages[error.code] ||
-                "Не удалось получить геопозицию."
+                "Не удалось получить геопозицию. Проверь разрешения телефона."
             );
         },
-
         {
             enableHighAccuracy: true,
-            maximumAge: 5000,
-            timeout: 20000
+            maximumAge: 10000,
+            timeout: 15000
         }
     );
+}
 
-    if (locationWatchId === -1) {
-        locationWatchId = watchId;
+
+// Получение координат через Telegram.
+function requestTelegramLocation() {
+    if (!tg?.LocationManager) {
+        return;
+    }
+
+    tg.LocationManager.getLocation((location) => {
+        if (!location) {
+            setMyLocationStatus(
+                "Telegram не передал геопозицию"
+            );
+            return;
+        }
+
+        saveLocation(
+            location.latitude,
+            location.longitude
+        ).then(() => {
+            setMyLocationStatus(
+                "Геопозиция передаётся партнёру 📍"
+            );
+        });
+    });
+}
+
+
+// Сохранение координат в Firebase.
+async function saveLocation(latitude, longitude) {
+    if (!currentUser || !currentPairId) {
+        return;
+    }
+
+    try {
+        const pairRef = doc(db, "pairs", currentPairId);
+
+        await updateDoc(pairRef, {
+            [`locations.${currentUser.uid}`]: {
+                latitude,
+                longitude,
+                updatedAt: Date.now()
+            }
+        });
+    } catch (error) {
+        console.error(
+            "Ошибка сохранения геопозиции:",
+            error
+        );
+
+        setMyLocationStatus(
+            "Не удалось сохранить геопозицию"
+        );
     }
 }
 
