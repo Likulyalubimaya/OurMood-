@@ -12,7 +12,7 @@
 
     <title>OurMood 💜</title>
 
-    <link rel="stylesheet" href="style.css?v=8">
+    <link rel="stylesheet" href="style.css?v=9">
 
     <script
         src="https://telegram.org/js/telegram-web-app.js"
@@ -87,73 +87,17 @@
 
 
             <div class="side-menu-buttons">
+    <button id="change-profile" class="secondary-button" type="button">✏️ Изменить профиль</button>
 
+    <button id="pair-data" class="secondary-button" type="button">
+        👫 Данные пары
+    </button>
 
-                <!-- ИЗМЕНИТЬ ПРОФИЛЬ -->
-
-                <button
-                    id="change-profile"
-                    class="secondary-button"
-                    type="button"
-                >
-
-                    ✏️ Изменить профиль
-
-                </button>
-
-
-                <!-- СОЗДАТЬ ПАРУ -->
-
-                <button
-                    id="create-pair"
-                    class="secondary-button"
-                    type="button"
-                >
-
-                    👫 Создать пару
-
-                </button>
-
-
-                <!-- ПРИГЛАСИТЬ -->
-
-                <button
-                    id="share-pair"
-                    class="secondary-button"
-                    type="button"
-                >
-
-                    💌 Пригласить партнёра
-
-                </button>
-
-
-                <!-- ПОДКЛЮЧИТЬСЯ -->
-
-                <button
-                    id="join-pair"
-                    class="secondary-button"
-                    type="button"
-                >
-
-                    🔗 Подключиться к партнёру
-
-                </button>
-
-
-                <!-- ПОКИНУТЬ ПАРУ -->
-
-                <button
-                    id="leave-pair"
-                    class="secondary-button"
-                    type="button"
-                >
-
-                    🚪 Покинуть пару
-
-                </button>
-
-            </div>
+    <button id="create-pair" class="secondary-button" type="button">👫 Создать пару</button>
+    <button id="share-pair" class="secondary-button" type="button">💌 Пригласить партнёра</button>
+    <button id="join-pair" class="secondary-button" type="button">🔗 Подключиться к партнёру</button>
+    <button id="leave-pair" class="secondary-button" type="button">🚪 Покинуть пару</button>
+</div>
 
         </div>
 
@@ -602,6 +546,58 @@
 
     </div>
 
+<div id="pair-data-modal" class="event-modal">
+    <div class="event-modal-content">
+
+        <button id="pair-data-close" class="event-modal-close" type="button">
+            ✕
+        </button>
+
+        <div class="event-modal-icon">👫</div>
+
+        <h2>Данные пары</h2>
+
+        <p class="pair-data-description">
+            Здесь можно указать важную дату вашей пары 💜
+        </p>
+
+        <div class="pair-data-block">
+
+            <label for="relationship-date">
+                📅 Дата начала отношений
+            </label>
+
+            <input
+                id="relationship-date"
+                type="date"
+            >
+
+            <button
+                id="save-relationship-date"
+                class="primary-button"
+                type="button"
+            >
+                Сохранить дату
+            </button>
+
+            <p
+                id="relationship-date-message"
+                class="message"
+            ></p>
+
+            <div id="relationship-counter" class="relationship-counter" hidden>
+    <div class="relationship-counter-heart">💜</div>
+    <h3 id="relationship-counter-title">Вы вместе</h3>
+    <p id="relationship-counter-days">0 дней</p>
+    <span id="relationship-counter-date"></span>
+
+</div>
+
+        </div>
+
+    </div>
+</div>
+
 <!-- ОКНО СОБЫТИЯ КАЛЕНДАРЯ -->
 <div id="event-modal" class="event-modal">
     <div class="event-modal-content">
@@ -675,7 +671,7 @@
     <!-- JAVASCRIPT -->
     <!-- ================================================= -->
 
-    <script type="module" src="app.js?v=8"></script>
+    <script type="module" src="app.js?v=9"></script>
 
 
 </body>

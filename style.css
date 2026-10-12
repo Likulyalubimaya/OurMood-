@@ -1341,3 +1341,119 @@ header {
         height: 40px;
     }
 }
+/* =========================
+   ДАННЫЕ ПАРЫ
+========================= */
+
+.pair-data-description {
+    margin: 0 0 22px;
+
+    color: var(--muted);
+
+    font-size: 14px;
+
+    line-height: 1.5;
+
+    text-align: center;
+}
+
+.pair-data-block {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 12px;
+}
+
+.pair-data-block label {
+    font-size: 14px;
+
+    font-weight: 600;
+
+    color: #f1edf8;
+}
+
+.pair-data-block input[type="date"] {
+    width: 100%;
+
+    box-sizing: border-box;
+
+    padding: 14px 15px;
+
+    border: 1px solid rgba(167, 139, 250, 0.25);
+
+    border-radius: 14px;
+
+    background: #1c172b;
+
+    color: #f1edf8;
+
+    font-size: 15px;
+
+    outline: none;
+
+    color-scheme: dark;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.pair-data-block input[type="date"]:focus {
+    border-color: var(--pink);
+
+    box-shadow:
+        0 0 0 3px rgba(240, 171, 252, 0.10);
+}
+
+.pair-data-block .primary-button {
+    margin-top: 4px;
+}
+
+#relationship-date-message {
+    margin: 2px 0 0;
+
+    min-height: 20px;
+}
+
+/* ========================================= */
+/* СЧЁТЧИК ДНЕЙ ОТНОШЕНИЙ */
+/* ========================================= */
+
+.relationship-counter {
+    margin-top: 12px;
+    padding: 22px 14px;
+    text-align: center;
+    border: 1px solid rgba(240, 171, 252, 0.22);
+    border-radius: 20px;
+    background: linear-gradient(145deg, #302442, #20182f);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.relationship-counter[hidden] {
+    display: none !important;
+}
+
+.relationship-counter-heart {
+    font-size: 34px;
+    margin-bottom: 8px;
+}
+
+.relationship-counter h3 {
+    color: var(--text);
+    font-size: 17px;
+    margin-bottom: 8px;
+}
+
+#relationship-counter-days {
+    color: var(--pink);
+    font-size: 25px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+#relationship-counter-date {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.5;
+}

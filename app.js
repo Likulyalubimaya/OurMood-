@@ -738,6 +738,15 @@ function listenToPair(pairId) {
             }
 
             const pairData = snapshot.data();
+            const relationshipDate =
+    pairData.relationshipStartDate || "";
+
+renderRelationshipCounter(relationshipDate);
+
+if (relationshipDateInput) {
+    relationshipDateInput.value = relationshipDate;
+    relationshipDateInput.max = getTodayDateString();
+}
 
             // ==========================================
             // КАЛЕНДАРЬ
@@ -1057,6 +1066,207 @@ $("create-pair")?.addEventListener(
     }
 );
 
+
+ // =========================
+// ДАННЫЕ ПАРЫ
+// =========================
+
+const pairDataModal = $("pair-data-modal");
+const pairDataButton = $("pair-data");
+const pairDataClose = $("pair-data-close");
+const relationshipDateInput = $("relationship-date");
+const saveRelationshipDateButton = $("save-relationship-date");
+const relationshipDateMessage = $("relationship-date-message");
+
+const relationshipCounter = $("relationship-counter");
+const relationshipCounterTitle = $("relationship-counter-title");
+const relationshipCounterDays = $("relationship-counter-days");
+const relationshipCounterDate = $("relationship-counter-date");
+
+// Сегодня в локальном формате YYYY-MM-DD
+function getTodayDateString() {
+    const today = new Date();
+
+    return [
+        today.getFullYear(),
+        String(today.getMonth() + 1).padStart(2, "0"),
+        String(today.getDate()).padStart(2, "0")
+    ].join("-");
+}
+
+// Правильное склонение слова "день"
+function getDaysWord(days) {
+    const lastTwo = days % 100;
+    const last = days % 10;
+
+    if (lastTwo >= 11 && lastTwo <= 14) {
+        return "дней";
+    }
+
+    if (last === 1) {
+        return "день";
+    }
+
+    if (last >= 2 && last <= 4) {
+        return "дня";
+    }
+
+    return "дней";
+}
+
+// Отображение счётчика отношений
+function renderRelationshipCounter(date) {
+    if (
+        !relationshipCounter ||
+        !relationshipCounterTitle ||
+        !relationshipCounterDays ||
+        !relationshipCounterDate
+    ) {
+        return;
+    }
+
+    if (!date) {
+        relationshipCounter.hidden = true;
+        return;
+    }
+
+    const todayString = getTodayDateString();
+
+    if (date > todayString) {
+        relationshipCounter.hidden = true;
+        return;
+    }
+
+    const start = new Date(date + "T12:00:00");
+    const today = new Date(todayString + "T12:00:00");
+
+    const days = Math.round(
+        (today.getTime() - start.getTime()) / 86400000
+    );
+
+    if (!Number.isFinite(days) || days < 0) {
+        relationshipCounter.hidden = true;
+        return;
+    }
+
+    relationshipCounterTitle.textContent =
+        days === 0 ? "Сегодня начало вашей истории 💜" : "Вы вместе";
+
+    relationshipCounterDays.textContent =
+        `${days} ${getDaysWord(days)}`;
+
+    relationshipCounterDate.textContent =
+        "Начало отношений: " +
+        start.toLocaleDateString("ru-RU", {
+            day: "numeric",
+            month: "long",
+            year: "numeric"
+        });
+
+    relationshipCounter.hidden = false;
+}
+
+// Открытие окна
+pairDataButton?.addEventListener("click", async () => {
+    closeMenu();
+
+    if (!currentPairId) {
+        relationshipDateMessage.textContent =
+            "Сначала создайте пару или подключитесь к партнёру 💜";
+
+        relationshipDateInput.value = "";
+        relationshipDateInput.max = getTodayDateString();
+        renderRelationshipCounter(null);
+
+        pairDataModal?.classList.add("open");
+        return;
+    }
+
+    try {
+        relationshipDateMessage.textContent = "Загружаем данные...";
+
+        const pairRef = doc(db, "pairs", currentPairId);
+        const snapshot = await getDoc(pairRef);
+
+        if (!snapshot.exists()) {
+            relationshipDateMessage.textContent =
+                "Пара не найдена. Попробуйте подключиться снова.";
+            return;
+        }
+
+        const pairData = snapshot.data();
+        const date = pairData.relationshipStartDate || "";
+
+        relationshipDateInput.max = getTodayDateString();
+        relationshipDateInput.value = date;
+
+        renderRelationshipCounter(date);
+
+        relationshipDateMessage.textContent = "";
+        pairDataModal?.classList.add("open");
+    } catch (error) {
+        console.error("Ошибка загрузки данных пары:", error);
+
+        relationshipDateMessage.textContent =
+            "Не удалось загрузить данные 😔";
+    }
+});
+
+// Закрытие окна
+pairDataClose?.addEventListener("click", () => {
+    pairDataModal?.classList.remove("open");
+});
+
+pairDataModal?.addEventListener("click", event => {
+    if (event.target === pairDataModal) {
+        pairDataModal.classList.remove("open");
+    }
+});
+
+// Сохранение даты
+saveRelationshipDateButton?.addEventListener("click", async () => {
+    if (!currentUser || !currentPairId) {
+        relationshipDateMessage.textContent =
+            "Сначала создайте пару или подключитесь к партнёру 💜";
+        return;
+    }
+
+    const date = relationshipDateInput.value;
+
+    if (!date) {
+        relationshipDateMessage.textContent =
+            "Выберите дату начала отношений 📅";
+        return;
+    }
+
+    if (date > getTodayDateString()) {
+        relationshipDateMessage.textContent =
+            "Нельзя выбрать дату из будущего 💜";
+        return;
+    }
+
+    try {
+        saveRelationshipDateButton.disabled = true;
+        relationshipDateMessage.textContent = "Сохраняем дату...";
+
+        await updateDoc(
+            doc(db, "pairs", currentPairId),
+            { relationshipStartDate: date }
+        );
+
+        renderRelationshipCounter(date);
+
+        relationshipDateMessage.textContent =
+            "Дата сохранена для вас обоих 💜";
+    } catch (error) {
+        console.error("Ошибка сохранения даты:", error);
+
+        relationshipDateMessage.textContent =
+            "Не удалось сохранить дату 😔";
+    } finally {
+        saveRelationshipDateButton.disabled = false;
+    }
+});
 
 // ======================================================
 // JOIN PAIR
