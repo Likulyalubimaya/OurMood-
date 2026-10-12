@@ -1932,10 +1932,6 @@ $("join-pair")?.addEventListener(
 // ======================================================
 // LEAVE PAIR
 // ======================================================
-await stopLocationSharing({
-    quiet: true,
-    forgetPreference: true
-});
 $("leave-pair")?.addEventListener(
     "click",
     async () => {
@@ -1966,6 +1962,11 @@ $("leave-pair")?.addEventListener(
             return;
 
         }
+
+        await stopLocationSharing({
+            quiet: true,
+            forgetPreference: true
+        });
 
 
         try {
