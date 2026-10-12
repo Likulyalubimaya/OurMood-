@@ -1,0 +1,108 @@
+.location-card {
+  margin: 18px 0;
+  padding: 18px;
+  border: 1px solid rgba(240, 171, 252, 0.2);
+  border-radius: 22px;
+  background: linear-gradient(145deg, #251d36, #191426);
+  color: #f5f0ff;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+}
+
+.location-card-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.location-pin-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 46px;
+  width: 46px;
+  height: 46px;
+  border-radius: 15px;
+  background: rgba(167, 139, 250, 0.16);
+  font-size: 24px;
+}
+
+.location-card h2 {
+  margin: 0 0 5px;
+  font-size: 18px;
+}
+
+.location-description {
+  margin: 0;
+  color: #b6aecb;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.partner-location-map {
+  width: 100%;
+  height: 230px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #211a30;
+  z-index: 0;
+}
+
+.location-status {
+  min-height: 18px;
+  margin: 11px 0 15px;
+  color: #d8ccef;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.location-sharing-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(240, 171, 252, 0.14);
+}
+
+.location-sharing-controls strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.location-sharing-controls button {
+  flex: 0 1 auto;
+  margin: 0;
+}
+
+.location-privacy-note {
+  margin: 12px 0 0;
+  color: #9388aa;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.ourmood-location-marker {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 2px solid #f5d0fe;
+  border-radius: 50% 50% 50% 8px;
+  background: #8b5cf6;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  font-size: 20px;
+  transform: rotate(-45deg);
+}
+
+.ourmood-location-marker span {
+  transform: rotate(45deg);
+}
+
+@media (max-width: 420px) {
+  .location-card { padding: 14px; }
+  .partner-location-map { height: 200px; }
+  .location-sharing-controls { align-items: stretch; }
+  .location-sharing-controls button { width: 100%; }
+}

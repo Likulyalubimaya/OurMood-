@@ -12,7 +12,10 @@
 
     <title>OurMood 💜</title>
 
-    <link rel="stylesheet" href="style.css?v=9">
+    <link rel="stylesheet" href="style.css?v=10">
+    <link rel="stylesheet" href="location.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script
         src="https://telegram.org/js/telegram-web-app.js"
@@ -159,6 +162,27 @@
                 </div>
 
             </section>
+        <section class="location-card" aria-labelledby="location-title">
+    <div class="location-card-heading">
+    <div class="location-pin-icon">📍</div>
+    <div>
+        <h2 id="location-title">Где мой любимый человек?</h2>
+        <p class="location-description">Геопозиция видна только вашей паре, когда партнёр сам включает передачу.</p>
+    </div>
+    </div>
+
+    <div id="partner-location-map" class="partner-location-map" role="img" aria-label="Карта с местоположением партнёра"></div>
+    <p id="partner-location-status" class="location-status" aria-live="polite">Подключите партнёра, чтобы использовать эту функцию.</p>
+
+    <div class="location-sharing-controls">
+    <div>
+        <strong>Моя геопозиция</strong>
+        <p id="my-location-status" class="location-description" aria-live="polite">Передача выключена</p>
+    </div>
+    <button id="toggle-location-sharing" class="secondary-button" type="button">Включить геопозицию</button>
+    </div>
+    <p class="location-privacy-note">Передача включается только после твоего подтверждения. Отключить её можно в любой момент.</p>
+</section>
 
 
 
@@ -671,7 +695,7 @@
     <!-- JAVASCRIPT -->
     <!-- ================================================= -->
 
-    <script type="module" src="app.js?v=9"></script>
+    <script type="module" src="app.js?v=10"></script>
 
 
 </body>

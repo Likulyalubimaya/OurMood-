@@ -105,6 +105,12 @@ let selectedMood = null;
 
 let stopListening = null;
 
+let locationWatchId = null;
+let lastLocationWriteAt = 0;
+let partnerLocationMap = null;
+let partnerLocationMarker = null;
+let locationWriteBusy = false;
+
 let pendingInviteCode =
     tg?.initDataUnsafe?.start_param || null;
 
@@ -691,6 +697,214 @@ function getCalendarDateKey(
 
 }
 
+// ======================================================
+// LOCATION SHARING — только с явного согласия пользователя
+// ======================================================
+
+function setMyLocationStatus(text) {
+    const el = $("my-location-status");
+    if (el) el.textContent = text;
+}
+
+function setPartnerLocationStatus(text) {
+    const el = $("partner-location-status");
+    if (el) el.textContent = text;
+}
+
+function getLocationMap() {
+    const mapElement = $("partner-location-map");
+    if (!mapElement || !window.L) return null;
+
+    if (!partnerLocationMap) {
+    partnerLocationMap = L.map(mapElement, {
+        zoomControl: true,
+        scrollWheelZoom: false
+    }).setView([20, 0], 2);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(partnerLocationMap);
+    }
+
+  // Нужно, если карта впервые стала видимой после отрисовки страницы.
+    setTimeout(() => partnerLocationMap?.invalidateSize(), 100);
+    return partnerLocationMap;
+}
+
+function renderPartnerLocation(pairData, partnerId) {
+    const map = getLocationMap();
+    const button = $("toggle-location-sharing");
+
+    if (button) {
+    button.disabled = !currentUser || !currentPairId;
+    }
+
+    if (!currentPairId || !partnerId) {
+    if (partnerLocationMarker && map) {
+        map.removeLayer(partnerLocationMarker);
+        partnerLocationMarker = null;
+    }
+    setPartnerLocationStatus(
+        currentPairId ? "Ожидаем, когда партнёр подключится 💌" : "Сначала создайте пару или подключитесь к партнёру."
+    );
+    return;
+    }
+
+    const location = pairData?.locations?.[partnerId];
+    if (!location || typeof location.latitude !== "number" || typeof location.longitude !== "number") {
+    if (partnerLocationMarker && map) {
+        map.removeLayer(partnerLocationMarker);
+        partnerLocationMarker = null;
+    }
+    setPartnerLocationStatus("Партнёр пока не делится геопозицией. Он может включить её в своём приложении 💜");
+    return;
+    }
+
+    const updatedAt = Number(location.updatedAt || 0);
+    const ageMs = Date.now() - updatedAt;
+    if (!updatedAt || ageMs > 120000) {
+    if (partnerLocationMarker && map) {
+        map.removeLayer(partnerLocationMarker);
+        partnerLocationMarker = null;
+    }
+    setPartnerLocationStatus("Геопозиция давно не обновлялась. Попроси партнёра открыть OurMood и включить передачу снова.");
+    return;
+    }
+
+    if (!map) {
+    setPartnerLocationStatus("Не удалось загрузить карту. Проверь подключение к интернету.");
+    return;
+    }
+
+    const point = [location.latitude, location.longitude];
+    const icon = L.divIcon({
+    className: "",
+    html: '<div class="ourmood-location-marker"><span>💜</span></div>',
+    iconSize: [38, 38],
+    iconAnchor: [19, 34]
+    });
+
+    if (!partnerLocationMarker) {
+    partnerLocationMarker = L.marker(point, { icon }).addTo(map);
+    } else {
+    partnerLocationMarker.setLatLng(point);
+    }
+
+    map.setView(point, Math.max(map.getZoom(), 15));
+    const seconds = Math.max(0, Math.floor(ageMs / 1000));
+    setPartnerLocationStatus(
+    seconds < 10 ? "Партнёр делится геопозицией сейчас 💜" : `Последнее обновление: ${seconds} сек. назад`
+    );
+}
+
+async function stopLocationSharing({ quiet = false } = {}) {
+    if (locationWatchId !== null && navigator.geolocation) {
+    navigator.geolocation.clearWatch(locationWatchId);
+    }
+    locationWatchId = null;
+    lastLocationWriteAt = 0;
+    locationWriteBusy = false;
+
+    const button = $("toggle-location-sharing");
+    if (button) button.textContent = "Включить геопозицию";
+    setMyLocationStatus("Передача выключена");
+
+    if (currentUser && currentPairId) {
+    try {
+        await updateDoc(doc(db, "pairs", currentPairId), {
+        [`locations.${currentUser.uid}`]: deleteField()
+        });
+    } catch (error) {
+        console.warn("Не удалось удалить геопозицию из пары:", error);
+    }
+    }
+
+    if (!quiet) setMyLocationStatus("Передача геопозиции остановлена");
+}
+
+function startLocationSharing() {
+    if (!currentUser || !currentPairId) {
+    setMyLocationStatus("Сначала подключись к партнёру.");
+    return;
+    }
+
+    if (!navigator.geolocation) {
+    setMyLocationStatus("Этот браузер не поддерживает геолокацию.");
+    return;
+    }
+
+    const accepted = confirm(
+    "Разрешить OurMood передавать твою текущую геопозицию партнёру?\n\n" +
+    "Координаты будут видны участнику твоей пары. Передачу можно остановить в любой момент кнопкой на этой карточке."
+    );
+    if (!accepted) return;
+
+  locationWatchId = -1; // защита от повторного нажатия, пока браузер запускает watchPosition
+    const button = $("toggle-location-sharing");
+    if (button) button.textContent = "Отключить геопозицию";
+    setMyLocationStatus("Запрашиваем разрешение и определяем местоположение…");
+
+    const watchId = navigator.geolocation.watchPosition(
+    async position => {
+        if (locationWatchId === null) return;
+        locationWatchId = watchId;
+
+        const now = Date.now();
+      // Ограничиваем запись в Firestore: не чаще раза в 10 секунд.
+        if (locationWriteBusy || (lastLocationWriteAt && now - lastLocationWriteAt < 10000)) {
+        setMyLocationStatus("Геопозиция включена и передаётся партнёру 💜");
+        return;
+        }
+
+        locationWriteBusy = true;
+        try {
+        await updateDoc(doc(db, "pairs", currentPairId), {
+            [`locations.${currentUser.uid}`]: {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            updatedAt: now
+            }
+        });
+        lastLocationWriteAt = now;
+        setMyLocationStatus("Геопозиция включена и передаётся партнёру 💜");
+        } catch (error) {
+        console.error("Не удалось передать геопозицию:", error);
+        setMyLocationStatus("Не удалось передать координаты. Проверь подключение к интернету.");
+        } finally {
+        locationWriteBusy = false;
+        }
+    },
+    error => {
+        console.warn("Ошибка геолокации:", error);
+      // Ошибка получения координат завершает текущую попытку, чтобы статус не обещал передачу.
+        if (locationWatchId !== null) {
+        navigator.geolocation.clearWatch(locationWatchId);
+        }
+        locationWatchId = null;
+        if (button) button.textContent = "Включить геопозицию";
+
+        const messages = {
+        1: "Доступ к геолокации запрещён. Разреши его в настройках браузера или Telegram.",
+        2: "Не удалось определить местоположение. Попробуй ещё раз.",
+        3: "Определение местоположения заняло слишком много времени. Попробуй ещё раз."
+        };
+        setMyLocationStatus(messages[error.code] || "Не удалось получить геопозицию.");
+    },
+    { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 }
+    );
+
+  // Синхронный callback браузера приходит после получения watchId; сохраняем его.
+    if (locationWatchId === -1) locationWatchId = watchId;
+}
+
+$("toggle-location-sharing")?.addEventListener("click", () => {
+  if (locationWatchId !== null) {
+    void stopLocationSharing();
+  } else {
+    startLocationSharing();
+  }
+});
 
 // ======================================================
 // LISTEN TO PAIR
@@ -783,6 +997,7 @@ if (relationshipDateInput) {
                     id =>
                         id !== currentUser?.uid
                 );
+            renderPartnerLocation(pairData, partnerId || null);
 
             if (!partnerId) {
 
@@ -1475,7 +1690,7 @@ $("join-pair")?.addEventListener(
 // ======================================================
 // LEAVE PAIR
 // ======================================================
-
+await stopLocationSharing({ quiet: true });
 $("leave-pair")?.addEventListener(
     "click",
     async () => {
